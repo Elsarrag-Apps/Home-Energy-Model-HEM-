@@ -30,7 +30,7 @@ st.write(
     "section. The UI collects inputs; HEM performs the final calculation."
 )
 
-BASE_JSON_PATH = Path("test/e2e/demo_files/short/demo.json")
+BASE_JSON_PATH = Path("ui/temp/active_hem_input.json")
 WEATHER_FILE = Path("test/e2e/demo_files/London_weather_CIBSE_format.csv")
 
 GENERATED_FABRIC_INPUT_PATH = Path("ui/temp/generated_fabric_case.json")
@@ -98,10 +98,7 @@ if "fabric_elements" not in st.session_state:
     st.session_state["fabric_elements"] = []
 
 
-st.info(
-    "Base HEM case: test/e2e/demo_files/short/demo.json. "
-    "This page replaces Zone -> zone 1 -> BuildingElement."
-)
+st.info
 st.header("Existing HEM fabric elements")
 
 try:
