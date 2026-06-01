@@ -32,12 +32,11 @@ def is_hem_input_json(data: dict) -> bool:
     }
 
     matched_keys = hem_keys.intersection(set(data.keys()))
-
     return len(matched_keys) >= 2 and "Zone" in data
 
 
 def is_app_project_json(data: dict) -> bool:
-    """Detect whether a JSON object looks like a saved Streamlit app project file."""
+    """Detect whether a JSON object looks like a saved app project file."""
     if not isinstance(data, dict):
         return False
 
@@ -139,7 +138,7 @@ def start_blank_project() -> dict:
 
 def clear_active_project() -> None:
     """Clear active project from session state and temp files."""
-    for key in [
+    keys_to_clear = [
         "active_app_project",
         "active_hem_input",
         "project_setup",
@@ -148,8 +147,14 @@ def clear_active_project() -> None:
         "hem_airtightness_exposure",
         "hem_background_vents",
         "hem_mechanical_ventilation",
+        "ventilation_defaults_loaded",
+        "generated_ventilation_input_ready",
+        "last_generated_ventilation_json",
         "thermal_bridges",
-    ]:
+        "generated_fabric_input_ready",
+    ]
+
+    for key in keys_to_clear:
         if key in st.session_state:
             del st.session_state[key]
 
@@ -166,6 +171,29 @@ def get_active_project() -> dict | None:
 def get_active_hem_input() -> dict | None:
     """Return active HEM input if available."""
     return st.session_state.get("active_hem_input")
+
+
+def update_project_data(section_name: str, section_data) -> None:
+    """Update a user-friendly section inside the active app project."""
+    project = get_active_project()
+
+    if project is None:
+        project = create_blank_project()
+
+    project.setdefault("project_data", {})
+    project["project_data"][section_name] = section_data
+
+    set_active_project(project)
+
+
+def get_project_data_section(section_name: str, default=None):
+    """Read a user-friendly section from the active app project."""
+    project = get_active_project()
+
+    if project is None:
+        return default
+
+    return project.get("project_data", {}).get(section_name, default)
 
 
 def save_current_project_to_file(output_path: Path) -> Path:

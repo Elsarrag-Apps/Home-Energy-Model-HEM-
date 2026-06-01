@@ -9,30 +9,28 @@ UI_DIR = CURRENT_DIR.parent
 UTILS_DIR = UI_DIR / "utils"
 sys.path.append(str(UTILS_DIR))
 
-from input_builder import (
-    build_generated_fabric_input,
-    get_zone_building_elements,
-    summarise_building_elements_for_table,
-)
+from hem_extractors import extract_fabric_elements_from_hem, summarise_active_hem_case
+from input_builder import build_generated_fabric_input
 from model_runner import run_hem_model
+from project_store import get_project_data_section, update_project_data
 from results_parser import compare_summary_metrics, format_number
 
 
 st.set_page_config(
-    page_title="Building Fabric - HEM",
+    page_title="Building Fabric",
     layout="wide",
 )
 
-st.title("Building Fabric - HEM Connected")
+st.title("Building Fabric")
 
 st.write(
-    "Add building fabric elements and generate a HEM-compatible BuildingElement "
-    "section. The UI collects inputs; HEM performs the final calculation."
+    "Review and edit the fabric elements loaded from the active HEM case. "
+    "You can modify the loaded rows, add new rows, prepare a HEM input file, "
+    "and compare the result with the uploaded baseline case."
 )
 
 BASE_JSON_PATH = Path("ui/temp/active_hem_input.json")
 WEATHER_FILE = Path("test/e2e/demo_files/London_weather_CIBSE_format.csv")
-
 GENERATED_FABRIC_INPUT_PATH = Path("ui/temp/generated_fabric_case.json")
 
 FABRIC_SUMMARY_PATH = Path(
@@ -45,146 +43,174 @@ BASE_SUMMARY_PATH = Path(
     "demo__core__results_summary.csv"
 )
 
-
-OPAQUE_ELEMENTS = [
-    "External wall",
-    "Roof",
-    "Ground floor",
-    "Exposed floor",
-    "External door",
-    "Party wall",
-]
-
-TRANSPARENT_ELEMENTS = [
-    "Window",
-    "Rooflight",
-]
+if not BASE_JSON_PATH.exists():
+    st.error(
+        "No active HEM input found. Go to the Home page and upload/load a HEM JSON first."
+    )
+    st.stop()
 
 
-def default_u_value(element_type: str) -> float:
-    values = {
-        "External wall": 0.21,
-        "Roof": 0.13,
-        "Ground floor": 0.15,
-        "Exposed floor": 0.15,
-        "External door": 1.00,
-        "Party wall": 0.50,
-        "Window": 1.20,
-        "Rooflight": 1.40,
-    }
-    return values.get(element_type, 0.21)
+def load_fabric_defaults_into_state(force_reload: bool = False) -> None:
+    already_loaded = st.session_state.get("fabric_defaults_loaded", False)
+
+    if already_loaded and not force_reload:
+        return
+
+    project_rows = get_project_data_section("fabric_elements", None)
+
+    if project_rows and not force_reload:
+        st.session_state["fabric_elements"] = project_rows
+    else:
+        st.session_state["fabric_elements"] = extract_fabric_elements_from_hem(
+            BASE_JSON_PATH,
+            zone_name="zone 1",
+        )
+
+    st.session_state["fabric_defaults_loaded"] = True
 
 
-def default_pitch(element_type: str) -> float:
-    if element_type == "Roof":
-        return 0.0
-    if element_type == "Ground floor":
-        return 180.0
-    if element_type == "Rooflight":
-        return 30.0
-    return 90.0
+def clear_fabric_state() -> None:
+    for key in [
+        "fabric_elements",
+        "fabric_defaults_loaded",
+        "generated_fabric_input_ready",
+        "last_generated_fabric_json",
+    ]:
+        if key in st.session_state:
+            del st.session_state[key]
 
 
-def is_external_opaque(element_type: str) -> bool:
-    return element_type in [
-        "External wall",
-        "Roof",
-        "Exposed floor",
-        "External door",
-    ]
+load_fabric_defaults_into_state(force_reload=False)
 
-
-if "fabric_elements" not in st.session_state:
-    st.session_state["fabric_elements"] = []
-
-
-st.info
-st.header("Existing HEM fabric elements")
+st.header("1. Input source")
 
 try:
-    existing_elements = get_zone_building_elements(BASE_JSON_PATH, zone_name="zone 1")
-    existing_table = summarise_building_elements_for_table(existing_elements)
+    case_summary = summarise_active_hem_case(BASE_JSON_PATH)
+    fabric_counts = case_summary["fabric_counts"]
 
-    st.write(
-        "These are the current BuildingElement entries in the base HEM file. "
-        "Use them as a reference before deciding whether to replace all elements "
-        "or add new UI elements to the existing model."
-    )
+    c1, c2, c3, c4 = st.columns(4)
 
-    st.dataframe(
-        existing_table,
-        use_container_width=True,
-        hide_index=True,
-    )
+    with c1:
+        st.metric("Opaque in uploaded case", fabric_counts["opaque"])
+
+    with c2:
+        st.metric("Transparent in uploaded case", fabric_counts["transparent"])
+
+    with c3:
+        st.metric("Ground in uploaded case", fabric_counts["ground"])
+
+    with c4:
+        st.metric("Party walls in uploaded case", fabric_counts["party_wall"])
 
 except Exception as exc:
-    st.warning("Could not load existing HEM BuildingElement data.")
-    st.exception(exc)
+    st.warning("Could not summarise the active HEM fabric data.")
+    with st.expander("Developer/debug: source summary error", expanded=False):
+        st.exception(exc)
 
+col_source_1, col_source_2 = st.columns(2)
 
-st.header("Fabric update mode")
+with col_source_1:
+    if st.button("Restore fabric rows from uploaded HEM JSON"):
+        load_fabric_defaults_into_state(force_reload=True)
+        update_project_data("fabric_elements", st.session_state["fabric_elements"])
+        st.success("Fabric rows restored from uploaded HEM JSON.")
+        st.rerun()
+
+with col_source_2:
+    if st.button("Clear fabric rows"):
+        clear_fabric_state()
+        update_project_data("fabric_elements", [])
+        st.warning("Fabric rows cleared. The uploaded HEM case is still loaded.")
+        st.rerun()
+
+st.caption(
+    "The editable rows below are derived from the uploaded HEM JSON. "
+    "Editing them changes the generated HEM case, not the original uploaded file."
+)
+
+st.header("2. Fabric update mode")
 
 fabric_update_mode = st.radio(
     "How should the generated HEM file handle existing fabric elements?",
     [
-        "Add new UI elements to existing HEM elements",
         "Replace all existing elements",
+        "Add new UI elements to existing HEM elements",
     ],
     index=0,
 )
 
-if fabric_update_mode == "Add new UI elements to existing HEM elements":
+if fabric_update_mode == "Replace all existing elements":
     st.info(
-        "Safer mode: the generated file keeps the existing HEM elements and adds "
-        "the new elements you enter below."
+        "Recommended for editing an uploaded case: the generated file uses the edited table below as the fabric model."
     )
 else:
     st.warning(
-        "Replace mode: the generated file will replace all existing BuildingElement "
-        "entries in zone 1 with the elements you enter below."
+        "Add mode keeps the original HEM fabric elements and adds the rows below as extra elements. "
+        "Use carefully to avoid duplicate fabric areas."
     )
 
-st.header("1. Add fabric element")
+st.header("3. Editable fabric rows")
 
-element_type = st.selectbox(
-    "Element type",
-    [
-        "External wall",
-        "Roof",
-        "Ground floor",
-        "Exposed floor",
-        "Window",
-        "Rooflight",
-        "External door",
-        "Party wall",
-    ],
-)
+fabric_rows = st.session_state.get("fabric_elements", [])
 
-with st.form("add_fabric_element_form"):
-    col1, col2, col3 = st.columns(3)
+if not fabric_rows:
+    st.info("No fabric rows loaded. Restore from uploaded HEM JSON or add rows manually.")
+    df = pd.DataFrame()
+else:
+    df = pd.DataFrame(fabric_rows)
 
-    with col1:
-        element_name = st.text_input("Element name", element_type)
+column_order = [
+    "source_name",
+    "name",
+    "type",
+    "area_m2",
+    "u_value_w_m2k",
+    "orientation",
+    "pitch_degrees",
+    "height_m",
+    "width_m",
+    "base_height_m",
+    "solar_absorption_coeff",
+    "g_value",
+    "frame_factor",
+    "openable_fraction",
+    "areal_heat_capacity_kj_m2k",
+    "mass_class",
+    "perimeter_m",
+    "psi_wall_floor_junc",
+    "floor_type",
+    "party_wall_cavity_type",
+    "notes",
+]
 
-        area_m2 = st.number_input(
-            "Area (m²)",
-            min_value=0.01,
-            value=20.0,
-            step=0.5,
-        )
+for column in column_order:
+    if column not in df.columns:
+        df[column] = ""
 
-        u_value = st.number_input(
-            "U-value (W/m²K)",
-            min_value=0.01,
-            value=default_u_value(element_type),
-            step=0.01,
-            format="%.3f",
-        )
+df = df[column_order]
 
-    with col2:
-        orientation = st.selectbox(
+edited_df = st.data_editor(
+    df,
+    use_container_width=True,
+    hide_index=True,
+    num_rows="dynamic",
+    column_config={
+        "type": st.column_config.SelectboxColumn(
+            "Type",
+            options=[
+                "External wall",
+                "Roof",
+                "Ground floor",
+                "Exposed floor",
+                "Window",
+                "Rooflight",
+                "External door",
+                "Party wall",
+            ],
+        ),
+        "orientation": st.column_config.SelectboxColumn(
             "Orientation",
-            [
+            options=[
                 "North",
                 "North East",
                 "East",
@@ -196,317 +222,84 @@ with st.form("add_fabric_element_form"):
                 "Horizontal",
                 "Not applicable",
             ],
-            index=4 if element_type in TRANSPARENT_ELEMENTS else 9,
-        )
-
-        pitch_degrees = st.number_input(
-            "Pitch / tilt (degrees)",
-            min_value=0.0,
-            max_value=180.0,
-            value=default_pitch(element_type),
-            step=1.0,
-        )
-
-        base_height_m = st.number_input(
-            "Base height (m)",
-            min_value=0.0,
-            value=0.0 if element_type != "Roof" else 2.7,
-            step=0.1,
-        )
-
-    with col3:
-        height_m = st.number_input(
-            "Height (m)",
-            min_value=0.01,
-            value=2.7 if element_type not in ["Roof", "Ground floor"] else 6.0,
-            step=0.1,
-        )
-
-        width_m = st.number_input(
-            "Width (m)",
-            min_value=0.01,
-            value=max(0.1, 20.0 / 2.7),
-            step=0.1,
-        )
-
-        mass_class = st.selectbox(
+        ),
+        "mass_class": st.column_config.SelectboxColumn(
             "Mass class",
-            [
-                "Lightweight",
-                "Medium",
-                "Heavy",
-                "Very heavy",
-                "Unknown",
-            ],
-            index=1,
-        )
+            options=["Lightweight", "Medium", "Heavy", "Very heavy", "Unknown"],
+        ),
+    },
+)
 
-    st.subheader("Thermal mass")
+if st.button("Save edited fabric rows"):
+    edited_rows = edited_df.fillna("").to_dict(orient="records")
+    st.session_state["fabric_elements"] = edited_rows
+    update_project_data("fabric_elements", edited_rows)
+    st.success("Edited fabric rows saved to the app project.")
 
-    col4, col5 = st.columns(2)
+st.header("4. Fabric input summary")
 
-    with col4:
-        areal_heat_capacity_kj_m2k = st.number_input(
-            "Areal heat capacity (kJ/m²K)",
-            min_value=0.0,
-            value=145.0 if element_type == "External wall" else 75.0,
-            step=5.0,
-        )
-
-    with col5:
-        notes = st.text_input("Notes", "")
-
-    extra_data = {}
-
-    if is_external_opaque(element_type):
-        st.subheader("Opaque external surface properties")
-
-        col6, col7 = st.columns(2)
-
-        with col6:
-            solar_absorption_coeff = st.number_input(
-                "Solar absorption coefficient",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.60,
-                step=0.01,
-                format="%.2f",
-            )
-
-        with col7:
-            surface_finish = st.selectbox(
-                "External surface finish",
-                [
-                    "Light / reflective finish",
-                    "Medium colour finish",
-                    "Dark brick / dark render",
-                    "Very dark / black roof",
-                    "User-defined",
-                ],
-            )
-
-        extra_data.update(
-            {
-                "solar_absorption_coeff": solar_absorption_coeff,
-                "surface_finish": surface_finish,
-            }
-        )
-
-    if element_type in TRANSPARENT_ELEMENTS:
-        st.subheader("Transparent element properties")
-
-        g1, g2, g3, g4 = st.columns(4)
-
-        with g1:
-            g_value = st.number_input(
-                "g-value",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.71,
-                step=0.01,
-                format="%.2f",
-            )
-
-        with g2:
-            frame_factor = st.number_input(
-                "Frame factor",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.70,
-                step=0.01,
-                format="%.2f",
-            )
-
-        with g3:
-            openable_fraction = st.number_input(
-                "Openable fraction",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.0,
-                step=0.05,
-                format="%.2f",
-            )
-
-        with g4:
-            free_area_height_m = st.number_input(
-                "Free area height (m)",
-                min_value=0.0,
-                value=0.2,
-                step=0.1,
-            )
-
-        extra_data.update(
-            {
-                "g_value": g_value,
-                "frame_factor": frame_factor,
-                "openable_fraction": openable_fraction,
-                "free_area_height_m": free_area_height_m,
-            }
-        )
-
-    if element_type == "Ground floor":
-        st.subheader("Ground floor properties")
-
-        g1, g2, g3 = st.columns(3)
-
-        with g1:
-            perimeter_m = st.number_input(
-                "Perimeter (m)",
-                min_value=0.0,
-                value=28.0,
-                step=0.5,
-            )
-
-        with g2:
-            thickness_walls_m = st.number_input(
-                "Wall thickness at floor edge (m)",
-                min_value=0.0,
-                value=0.1705,
-                step=0.01,
-                format="%.4f",
-            )
-
-        with g3:
-            psi_wall_floor_junc = st.number_input(
-                "ψ wall-floor junction (W/mK)",
-                value=0.0,
-                step=0.01,
-                format="%.3f",
-            )
-
-        floor_type = st.selectbox(
-            "Ground floor type",
-            [
-                "Slab_no_edge_insulation",
-                "Slab_edge_insulation",
-                "Suspended_floor",
-                "Heated_basement",
-                "Unheated_basement",
-            ],
-        )
-
-        extra_data.update(
-            {
-                "perimeter_m": perimeter_m,
-                "thickness_walls_m": thickness_walls_m,
-                "psi_wall_floor_junc": psi_wall_floor_junc,
-                "floor_type": floor_type,
-            }
-        )
-
-    if element_type == "Party wall":
-        st.subheader("Party wall properties")
-
-        party_wall_cavity_type = st.selectbox(
-            "Party wall cavity type",
-            [
-                "solid",
-                "unfilled_unsealed",
-                "filled",
-                "defined_resistance",
-            ],
-        )
-
-        extra_data.update(
-            {
-                "party_wall_cavity_type": party_wall_cavity_type,
-            }
-        )
-
-    add_element = st.form_submit_button("Add fabric element")
-
-
-if add_element:
-    st.session_state["fabric_elements"].append(
-        {
-            "name": element_name,
-            "type": element_type,
-            "area_m2": area_m2,
-            "u_value_w_m2k": u_value,
-            "orientation": orientation,
-            "pitch_degrees": pitch_degrees,
-            "base_height_m": base_height_m,
-            "height_m": height_m,
-            "width_m": width_m,
-            "mass_class": mass_class,
-            "areal_heat_capacity_kj_m2k": areal_heat_capacity_kj_m2k,
-            "notes": notes,
-            **extra_data,
-        }
-    )
-
-    st.success(f"Added fabric element: {element_name}")
-
-
-st.header("2. Fabric elements to be written to HEM")
-
-if not st.session_state["fabric_elements"]:
-    st.warning("No fabric elements added yet.")
+if edited_df.empty:
+    st.info("No fabric rows available for summary.")
 else:
-    df = pd.DataFrame(st.session_state["fabric_elements"])
+    numeric_area = pd.to_numeric(edited_df["area_m2"], errors="coerce").fillna(0)
+    numeric_u = pd.to_numeric(edited_df["u_value_w_m2k"], errors="coerce").fillna(0)
 
-    st.dataframe(
-        df,
-        use_container_width=True,
-        hide_index=True,
-    )
-
-    total_area = df["area_m2"].sum()
-    fabric_hlc = (df["area_m2"] * df["u_value_w_m2k"]).sum()
+    total_area = numeric_area.sum()
+    fabric_hlc = (numeric_area * numeric_u).sum()
     average_u = fabric_hlc / total_area if total_area > 0 else 0
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric("Total area", f"{total_area:.1f} m²")
+        st.metric("Editable fabric area", f"{total_area:.1f} m2")
 
     with col2:
         st.metric("Input HLC indicator", f"{fabric_hlc:.1f} W/K")
 
     with col3:
-        st.metric("Area-weighted U-value", f"{average_u:.3f} W/m²K")
+        st.metric("Area-weighted U-value", f"{average_u:.3f} W/m2K")
 
-    st.subheader("Input HLC contribution")
-    chart_df = df.copy()
-    chart_df["hlc_w_k"] = chart_df["area_m2"] * chart_df["u_value_w_m2k"]
+    chart_df = edited_df.copy()
+    chart_df["hlc_w_k"] = numeric_area * numeric_u
+    chart_df["name"] = chart_df["name"].astype(str)
     st.bar_chart(chart_df[["name", "hlc_w_k"]].set_index("name"))
 
-    if st.button("Clear all fabric elements"):
-        st.session_state["fabric_elements"] = []
-        st.rerun()
+st.header("5. Prepare and run HEM")
 
+fabric_elements_for_run = edited_df.fillna("").to_dict(orient="records")
 
-st.header("3. Build HEM JSON and run")
-
-if not st.session_state["fabric_elements"]:
-    st.warning("Add at least one fabric element before building the HEM JSON.")
+if not fabric_elements_for_run:
+    st.warning("Add or restore fabric rows before preparing the HEM input.")
 else:
-    if st.button("Build generated fabric HEM JSON"):
+    if st.button("Prepare HEM input from edited fabric rows"):
         try:
+            st.session_state["fabric_elements"] = fabric_elements_for_run
+            update_project_data("fabric_elements", fabric_elements_for_run)
+
             generated_input = build_generated_fabric_input(
                 base_json_path=BASE_JSON_PATH,
                 output_json_path=GENERATED_FABRIC_INPUT_PATH,
-                fabric_elements=st.session_state["fabric_elements"],
+                fabric_elements=fabric_elements_for_run,
                 zone_name="zone 1",
                 update_mode=fabric_update_mode,
             )
 
             st.session_state["generated_fabric_input_ready"] = True
+            st.session_state["last_generated_fabric_json"] = generated_input[
+                "Zone"
+            ]["zone 1"]["BuildingElement"]
 
-            st.success(f"Generated HEM input saved to: {GENERATED_FABRIC_INPUT_PATH}")
-
-            with st.expander(
-                "Preview generated Zone -> zone 1 -> BuildingElement JSON",
-                expanded=True,
-            ):
-                st.json(generated_input["Zone"]["zone 1"]["BuildingElement"])
+            st.success("HEM input prepared successfully from edited fabric rows.")
 
         except Exception as exc:
-            st.error("Failed to build generated HEM fabric input.")
-            st.exception(exc)
+            st.error("Failed to prepare HEM fabric input.")
+            with st.expander("Developer/debug: preparation error", expanded=True):
+                st.exception(exc)
 
     if st.session_state.get("generated_fabric_input_ready"):
-        if st.button("Run HEM with generated fabric input"):
+        st.info("Prepared case is ready. You can now run HEM and compare results.")
+
+        if st.button("Run HEM and compare fabric case"):
             with st.spinner("Running HEM..."):
                 result = run_hem_model(GENERATED_FABRIC_INPUT_PATH, WEATHER_FILE)
 
@@ -516,7 +309,7 @@ else:
                 if FABRIC_SUMMARY_PATH.exists():
                     summary_text = FABRIC_SUMMARY_PATH.read_text(encoding="utf-8")
 
-                    st.subheader("HEM result comparison")
+                    st.subheader("Results comparison")
 
                     if BASE_SUMMARY_PATH.exists():
                         comparison = compare_summary_metrics(
@@ -527,91 +320,53 @@ else:
                         col1, col2, col3 = st.columns(3)
 
                         space_heat = next(
-                            item
-                            for item in comparison
+                            item for item in comparison
                             if item["metric"] == "Space heat demand"
                         )
-
                         peak_elec = next(
-                            item
-                            for item in comparison
+                            item for item in comparison
                             if item["metric"] == "Peak electricity consumption"
                         )
-
                         delivered = next(
-                            item
-                            for item in comparison
+                            item for item in comparison
                             if item["metric"] == "Delivered energy total"
                         )
 
                         with col1:
                             st.metric(
                                 "Space heat demand",
-                                (
-                                    f"{format_number(space_heat['generated_value'])} "
-                                    f"{space_heat['unit']}"
-                                ),
-                                (
-                                    f"{format_number(space_heat['difference'])} "
-                                    f"{space_heat['unit']}"
-                                ),
+                                f"{format_number(space_heat['generated_value'])} {space_heat['unit']}",
+                                f"{format_number(space_heat['difference'])} {space_heat['unit']}",
                             )
 
                         with col2:
                             st.metric(
                                 "Peak electricity",
-                                (
-                                    f"{format_number(peak_elec['generated_value'])} "
-                                    f"{peak_elec['unit']}"
-                                ),
-                                (
-                                    f"{format_number(peak_elec['difference'])} "
-                                    f"{peak_elec['unit']}"
-                                ),
+                                f"{format_number(peak_elec['generated_value'])} {peak_elec['unit']}",
+                                f"{format_number(peak_elec['difference'])} {peak_elec['unit']}",
                             )
 
                         with col3:
                             st.metric(
                                 "Delivered energy",
-                                (
-                                    f"{format_number(delivered['generated_value'])} "
-                                    f"{delivered['unit']}"
-                                ),
-                                (
-                                    f"{format_number(delivered['difference'])} "
-                                    f"{delivered['unit']}"
-                                ),
+                                f"{format_number(delivered['generated_value'])} {delivered['unit']}",
+                                f"{format_number(delivered['difference'])} {delivered['unit']}",
                             )
 
-                        st.subheader("Base vs generated case comparison")
-
-                        comparison_rows = []
-                        for item in comparison:
-                            comparison_rows.append(
-                                {
-                                    "Metric": item["metric"],
-                                    "Base value": item["base_value"],
-                                    "Generated value": item["generated_value"],
-                                    "Difference": item["difference"],
-                                    "Percent change": item["percent_change"],
-                                    "Unit": item["unit"],
-                                }
+                        with st.expander("Detailed comparison table", expanded=False):
+                            st.dataframe(
+                                comparison,
+                                use_container_width=True,
+                                hide_index=True,
                             )
-
-                        st.dataframe(
-                            comparison_rows,
-                            use_container_width=True,
-                            hide_index=True,
-                        )
 
                     else:
                         st.warning(
-                            "Base summary file was not found. "
-                            "Run the base demo case first if comparison is needed."
+                            "Base summary file was not found. Run the baseline case first if comparison is needed."
                         )
 
-                    st.subheader("HEM summary output")
-                    st.text(summary_text)
+                    with st.expander("View full HEM summary output", expanded=False):
+                        st.text(summary_text)
 
                     st.download_button(
                         "Download HEM summary CSV",
@@ -632,7 +387,13 @@ else:
                     st.subheader("Model output")
                     st.code(result.stdout)
 
+with st.expander("Advanced: view generated HEM fabric JSON", expanded=False):
+    generated_json = st.session_state.get("last_generated_fabric_json")
 
-st.header("4. Saved fabric input state")
+    if generated_json is None:
+        st.write("No generated fabric JSON has been prepared yet.")
+    else:
+        st.json(generated_json)
 
-st.json(st.session_state.get("fabric_elements", []))
+with st.expander("Developer/debug: view saved fabric rows", expanded=False):
+    st.json(st.session_state.get("fabric_elements", []))

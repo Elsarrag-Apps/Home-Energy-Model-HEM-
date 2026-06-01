@@ -9,13 +9,12 @@ UTILS_DIR = UI_DIR / "utils"
 sys.path.append(str(UTILS_DIR))
 
 from hem_extractors import extract_ventilation_defaults_from_hem
-from input_builder import build_generated_hem_input
-from model_runner import run_hem_model
-from results_parser import compare_summary_metrics, format_number
+from input_builder import build_hem_infiltration_ventilation
+from project_store import update_project_data
 
 
 st.set_page_config(
-    page_title="Infiltration & Ventilation - HEM",
+    page_title="Infiltration & Ventilation",
     layout="wide",
 )
 
@@ -23,23 +22,11 @@ st.title("Infiltration & Ventilation")
 
 st.write(
     "Review and edit the ventilation inputs loaded from the active HEM case. "
-    "The app prepares a HEM input file from these values, runs HEM, and compares "
-    "the result with the uploaded baseline case."
+    "Save the values here, then use the central Run HEM / Results tab to build "
+    "and run the full project case."
 )
 
 BASE_JSON_PATH = Path("ui/temp/active_hem_input.json")
-WEATHER_FILE = Path("test/e2e/demo_files/London_weather_CIBSE_format.csv")
-GENERATED_INPUT_PATH = Path("ui/temp/generated_ventilation_case.json")
-
-SUMMARY_PATH = Path(
-    "ui/temp/generated_ventilation_case__results/"
-    "generated_ventilation_case__core__results_summary.csv"
-)
-
-BASE_SUMMARY_PATH = Path(
-    "test/e2e/demo_files/short/demo__results/"
-    "demo__core__results_summary.csv"
-)
 
 if not BASE_JSON_PATH.exists():
     st.error(
@@ -49,8 +36,6 @@ if not BASE_JSON_PATH.exists():
 
 
 def load_ventilation_defaults_into_state(force_reload: bool = False) -> None:
-    """Load ventilation defaults from active HEM JSON into session state."""
-
     already_loaded = st.session_state.get("ventilation_defaults_loaded", False)
 
     if already_loaded and not force_reload:
@@ -70,18 +55,31 @@ def load_ventilation_defaults_into_state(force_reload: bool = False) -> None:
 
 
 def clear_ventilation_state() -> None:
-    """Clear only the ventilation form values from the app session."""
-
     for key in [
         "hem_airtightness_exposure",
         "hem_background_vents",
         "hem_mechanical_ventilation",
-        "generated_ventilation_input_ready",
         "ventilation_defaults_loaded",
         "last_generated_ventilation_json",
     ]:
         if key in st.session_state:
             del st.session_state[key]
+
+
+def current_ventilation_project_data() -> dict:
+    return {
+        "airtightness_exposure": st.session_state.get(
+            "hem_airtightness_exposure", {}
+        ),
+        "background_vents": st.session_state.get("hem_background_vents", []),
+        "mechanical_ventilation": st.session_state.get(
+            "hem_mechanical_ventilation", {}
+        ),
+    }
+
+
+def save_ventilation_to_project() -> None:
+    update_project_data("ventilation", current_ventilation_project_data())
 
 
 load_ventilation_defaults_into_state(force_reload=False)
@@ -96,12 +94,14 @@ with col_source_1:
 with col_source_2:
     if st.button("Restore from uploaded HEM JSON"):
         load_ventilation_defaults_into_state(force_reload=True)
+        save_ventilation_to_project()
         st.success("Ventilation values restored from uploaded HEM JSON.")
         st.rerun()
 
 with col_source_3:
     if st.button("Clear this ventilation form"):
         clear_ventilation_state()
+        update_project_data("ventilation", {})
         st.warning(
             "Ventilation form values cleared. The uploaded HEM case is still loaded."
         )
@@ -109,9 +109,8 @@ with col_source_3:
 
 st.caption(
     "Restore brings back the values from the uploaded HEM JSON. "
-    "Clear removes only this page’s form values so you can enter manually."
+    "Clear removes only this page's form values so you can enter manually."
 )
-
 
 airtightness_defaults = st.session_state.get(
     "hem_airtightness_exposure",
@@ -150,7 +149,6 @@ mechanical_defaults = st.session_state.get(
 if "hem_background_vents" not in st.session_state:
     st.session_state["hem_background_vents"] = []
 
-
 st.header("2. Leakage and exposure")
 
 with st.form("hem_airtightness_form"):
@@ -158,7 +156,7 @@ with st.form("hem_airtightness_form"):
 
     with col1:
         q50 = st.number_input(
-            "q50 test result (m³/h.m² at 50 Pa)",
+            "q50 test result (m3/h.m2 at 50 Pa)",
             min_value=0.01,
             value=float(airtightness_defaults["q50_m3_h_m2"]),
             step=0.10,
@@ -174,7 +172,7 @@ with st.form("hem_airtightness_form"):
 
     with col2:
         envelope_area = st.number_input(
-            "Envelope area (m²)",
+            "Envelope area (m2)",
             min_value=1.0,
             value=float(airtightness_defaults["envelope_area_m2"]),
             step=1.0,
@@ -245,7 +243,6 @@ with st.form("hem_airtightness_form"):
 
     save_airtightness = st.form_submit_button("Save leakage and exposure values")
 
-
 if save_airtightness:
     st.session_state["hem_airtightness_exposure"] = {
         "q50_m3_h_m2": q50,
@@ -259,8 +256,8 @@ if save_airtightness:
         "cross_ventilation": cross_ventilation,
     }
 
-    st.success("Leakage and exposure values saved.")
-
+    save_ventilation_to_project()
+    st.success("Leakage and exposure values saved to project.")
 
 st.header("3. Background vents")
 
@@ -273,7 +270,7 @@ with st.form("hem_background_vent_form"):
     with col1:
         vent_name = st.text_input("Vent name", default_vent_name)
         area_cm2 = st.number_input(
-            "Equivalent area (cm²)",
+            "Equivalent area (cm2)",
             min_value=0.01,
             value=100.0,
             step=10.0,
@@ -320,7 +317,6 @@ with st.form("hem_background_vent_form"):
 
     add_vent = st.form_submit_button("Add background vent")
 
-
 if add_vent:
     st.session_state["hem_background_vents"].append(
         {
@@ -333,8 +329,8 @@ if add_vent:
         }
     )
 
+    save_ventilation_to_project()
     st.success(f"Added background vent: {vent_name}")
-
 
 if st.session_state["hem_background_vents"]:
     st.subheader("Background vents")
@@ -347,8 +343,8 @@ if st.session_state["hem_background_vents"]:
 
     if st.button("Clear background vents"):
         st.session_state["hem_background_vents"] = []
+        save_ventilation_to_project()
         st.rerun()
-
 
 st.header("4. Mechanical ventilation")
 
@@ -373,11 +369,7 @@ with st.form("hem_mechanical_ventilation_form"):
             ),
         )
 
-        energy_supply = st.selectbox(
-            "Fan energy supply",
-            ["mains elec"],
-            index=0,
-        )
+        energy_supply = st.selectbox("Fan energy supply", ["mains elec"], index=0)
 
     with col2:
         design_flow_l_s = st.number_input(
@@ -385,7 +377,7 @@ with st.form("hem_mechanical_ventilation_form"):
             min_value=0.0,
             value=float(mechanical_defaults["design_flow_l_s"]),
             step=1.0,
-            help="The app converts this to m³/h when preparing the HEM input.",
+            help="The app converts this to m3/h when preparing the HEM input.",
         )
 
         sfp = st.number_input(
@@ -486,7 +478,6 @@ with st.form("hem_mechanical_ventilation_form"):
 
     save_mech = st.form_submit_button("Save mechanical ventilation values")
 
-
 if save_mech:
     st.session_state["hem_mechanical_ventilation"] = {
         "vent_type": vent_type,
@@ -504,157 +495,34 @@ if save_mech:
         "exhaust_mid_height_m": exhaust_mid_height,
     }
 
-    st.success("Mechanical ventilation values saved.")
+    save_ventilation_to_project()
+    st.success("Mechanical ventilation values saved to project.")
 
+st.header("5. Project save status")
 
-st.header("5. Prepare and run HEM")
+if st.button("Save all ventilation values to project"):
+    save_ventilation_to_project()
+    st.success("All ventilation values saved to the app project.")
 
-can_prepare = "hem_airtightness_exposure" in st.session_state
-
-if not can_prepare:
-    st.warning("Save leakage and exposure values before preparing the HEM input.")
+if st.session_state.get("hem_airtightness_exposure"):
+    st.success("Ventilation data is available for the central Run HEM / Results page.")
 else:
-    if st.button("Prepare HEM input from these ventilation values"):
-        generated_input = build_generated_hem_input(
-            base_json_path=BASE_JSON_PATH,
-            output_json_path=GENERATED_INPUT_PATH,
-            airtightness_exposure=st.session_state["hem_airtightness_exposure"],
-            background_vents=st.session_state["hem_background_vents"],
-            mechanical_ventilation=st.session_state.get("hem_mechanical_ventilation"),
+    st.info("No ventilation data has been saved yet.")
+
+with st.expander("Advanced: preview HEM ventilation section", expanded=False):
+    try:
+        preview = build_hem_infiltration_ventilation(
+            airtightness_exposure=st.session_state.get(
+                "hem_airtightness_exposure", {}
+            ),
+            background_vents=st.session_state.get("hem_background_vents", []),
+            mechanical_ventilation=st.session_state.get(
+                "hem_mechanical_ventilation"
+            ),
         )
-
-        st.session_state["generated_ventilation_input_ready"] = True
-        st.session_state["last_generated_ventilation_json"] = generated_input[
-            "InfiltrationVentilation"
-        ]
-
-        st.success("HEM input prepared successfully from these ventilation values.")
-
-    if st.session_state.get("generated_ventilation_input_ready"):
-        st.info("Prepared case is ready. You can now run HEM and compare results.")
-
-        if st.button("Run HEM and compare with uploaded case"):
-            with st.spinner("Running HEM..."):
-                result = run_hem_model(GENERATED_INPUT_PATH, WEATHER_FILE)
-
-            if result.returncode == 0:
-                st.success("HEM run completed successfully.")
-
-                if SUMMARY_PATH.exists():
-                    summary_text = SUMMARY_PATH.read_text(encoding="utf-8")
-
-                    st.subheader("Results comparison")
-
-                    if BASE_SUMMARY_PATH.exists():
-                        comparison = compare_summary_metrics(
-                            BASE_SUMMARY_PATH,
-                            SUMMARY_PATH,
-                        )
-
-                        col1, col2, col3, col4 = st.columns(4)
-
-                        space_heat = next(
-                            item
-                            for item in comparison
-                            if item["metric"] == "Space heat demand"
-                        )
-                        peak_elec = next(
-                            item
-                            for item in comparison
-                            if item["metric"] == "Peak electricity consumption"
-                        )
-                        delivered = next(
-                            item
-                            for item in comparison
-                            if item["metric"] == "Delivered energy total"
-                        )
-                        mech_vent = next(
-                            item
-                            for item in comparison
-                            if item["metric"] == "Mechanical ventilation energy"
-                        )
-
-                        with col1:
-                            st.metric(
-                                "Space heat demand",
-                                f"{format_number(space_heat['generated_value'])} {space_heat['unit']}",
-                                f"{format_number(space_heat['difference'])} {space_heat['unit']}",
-                            )
-
-                        with col2:
-                            st.metric(
-                                "Peak electricity",
-                                f"{format_number(peak_elec['generated_value'])} {peak_elec['unit']}",
-                                f"{format_number(peak_elec['difference'])} {peak_elec['unit']}",
-                            )
-
-                        with col3:
-                            st.metric(
-                                "Delivered energy",
-                                f"{format_number(delivered['generated_value'])} {delivered['unit']}",
-                                f"{format_number(delivered['difference'])} {delivered['unit']}",
-                            )
-
-                        with col4:
-                            st.metric(
-                                "Mechanical ventilation",
-                                f"{format_number(mech_vent['generated_value'])} {mech_vent['unit']}",
-                                f"{format_number(mech_vent['difference'])} {mech_vent['unit']}",
-                            )
-
-                        with st.expander(
-                            "Detailed comparison table",
-                            expanded=False,
-                        ):
-                            st.dataframe(
-                                comparison,
-                                use_container_width=True,
-                                hide_index=True,
-                            )
-
-                    else:
-                        st.warning(
-                            "Base summary file was not found. "
-                            "Run the baseline case first if comparison is needed."
-                        )
-
-                    with st.expander("View full HEM summary output", expanded=False):
-                        st.text(summary_text)
-
-                    st.download_button(
-                        "Download HEM summary CSV",
-                        data=summary_text,
-                        file_name="generated_ventilation_case__core__results_summary.csv",
-                        mime="text/csv",
-                    )
-
-                else:
-                    st.warning("HEM ran, but the expected summary file was not found.")
-
-            else:
-                st.error("HEM run failed.")
-                st.subheader("Error output")
-                st.code(result.stderr)
-
-                if result.stdout:
-                    st.subheader("Model output")
-                    st.code(result.stdout)
-
-
-with st.expander("Advanced: view generated HEM ventilation JSON", expanded=False):
-    generated_json = st.session_state.get("last_generated_ventilation_json")
-
-    if generated_json is None:
-        st.write("No generated ventilation JSON has been prepared yet.")
-    else:
-        st.json(generated_json)
-
+        st.json(preview)
+    except Exception:
+        st.write("Save leakage and exposure values to preview the HEM ventilation section.")
 
 with st.expander("Developer/debug: view saved ventilation state", expanded=False):
-    state_preview = {
-        "airtightness_exposure": st.session_state.get("hem_airtightness_exposure"),
-        "background_vents": st.session_state.get("hem_background_vents"),
-        "mechanical_ventilation": st.session_state.get("hem_mechanical_ventilation"),
-    }
-
-    st.json(state_preview)
+    st.json(current_ventilation_project_data())
