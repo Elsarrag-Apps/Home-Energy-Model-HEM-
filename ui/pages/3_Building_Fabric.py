@@ -1,20 +1,44 @@
+import sys
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
+CURRENT_DIR = Path(__file__).resolve().parent
+UI_DIR = CURRENT_DIR.parent
+UTILS_DIR = UI_DIR / "utils"
+sys.path.append(str(UTILS_DIR))
+
+from input_builder import build_generated_fabric_input
+from model_runner import run_hem_model
+from results_parser import compare_summary_metrics, format_number
+
 
 st.set_page_config(
-    page_title="Building Fabric",
-    layout="wide"
+    page_title="Building Fabric - HEM",
+    layout="wide",
 )
 
-st.title("Building Fabric")
+st.title("Building Fabric - HEM Connected")
 
 st.write(
-    "Add building fabric elements such as walls, roofs, floors, windows and doors. "
-    "Opaque external elements include solar absorption and surface properties. "
-    "Transparent elements include glazing solar and daylight properties. "
-    "The graphics on this page are for input checking; final energy calculations "
-    "will come from the HEM engine."
+    "Add building fabric elements and generate a HEM-compatible BuildingElement "
+    "section. The UI collects inputs; HEM performs the final calculation."
+)
+
+BASE_JSON_PATH = Path("test/e2e/demo_files/short/demo.json")
+WEATHER_FILE = Path("test/e2e/demo_files/London_weather_CIBSE_format.csv")
+
+GENERATED_FABRIC_INPUT_PATH = Path("ui/temp/generated_fabric_case.json")
+
+FABRIC_SUMMARY_PATH = Path(
+    "ui/temp/generated_fabric_case__results/"
+    "generated_fabric_case__core__results_summary.csv"
+)
+
+BASE_SUMMARY_PATH = Path(
+    "test/e2e/demo_files/short/demo__results/"
+    "demo__core__results_summary.csv"
 )
 
 
@@ -25,7 +49,6 @@ OPAQUE_ELEMENTS = [
     "Exposed floor",
     "External door",
     "Party wall",
-    "Adjacent unconditioned space",
 ]
 
 TRANSPARENT_ELEMENTS = [
@@ -34,33 +57,50 @@ TRANSPARENT_ELEMENTS = [
 ]
 
 
-def is_opaque_external(element_type: str, boundary_condition: str) -> bool:
-    return (
-        element_type in OPAQUE_ELEMENTS
-        and boundary_condition == "External"
-        and element_type not in ["Party wall", "Adjacent unconditioned space"]
-    )
-
-
-def default_solar_absorption(surface_finish: str) -> float:
+def default_u_value(element_type: str) -> float:
     values = {
-        "Light / reflective finish": 0.35,
-        "Medium colour finish": 0.55,
-        "Dark brick / dark render": 0.75,
-        "Very dark / black roof": 0.90,
-        "User-defined": 0.60,
+        "External wall": 0.21,
+        "Roof": 0.13,
+        "Ground floor": 0.15,
+        "Exposed floor": 0.15,
+        "External door": 1.00,
+        "Party wall": 0.50,
+        "Window": 1.20,
+        "Rooflight": 1.40,
     }
-    return values.get(surface_finish, 0.60)
+    return values.get(element_type, 0.21)
+
+
+def default_pitch(element_type: str) -> float:
+    if element_type == "Roof":
+        return 0.0
+    if element_type == "Ground floor":
+        return 180.0
+    if element_type == "Rooflight":
+        return 30.0
+    return 90.0
+
+
+def is_external_opaque(element_type: str) -> bool:
+    return element_type in [
+        "External wall",
+        "Roof",
+        "Exposed floor",
+        "External door",
+    ]
 
 
 if "fabric_elements" not in st.session_state:
     st.session_state["fabric_elements"] = []
 
-if "fabric_inputs_saved" not in st.session_state:
-    st.session_state["fabric_inputs_saved"] = False
+
+st.info(
+    "Base HEM case: test/e2e/demo_files/short/demo.json. "
+    "This page replaces Zone -> zone 1 -> BuildingElement."
+)
 
 
-st.subheader("Add fabric element")
+st.header("1. Add fabric element")
 
 element_type = st.selectbox(
     "Element type",
@@ -73,19 +113,7 @@ element_type = st.selectbox(
         "Rooflight",
         "External door",
         "Party wall",
-        "Adjacent unconditioned space",
     ],
-)
-
-boundary_condition = st.selectbox(
-    "Boundary condition",
-    [
-        "External",
-        "Ground",
-        "Adjacent unconditioned space",
-        "Party / internal",
-    ],
-    index=0 if element_type not in ["Ground floor", "Party wall"] else 1,
 )
 
 with st.form("add_fabric_element_form"):
@@ -93,22 +121,23 @@ with st.form("add_fabric_element_form"):
 
     with col1:
         element_name = st.text_input("Element name", element_type)
+
         area_m2 = st.number_input(
             "Area (m²)",
-            min_value=0.0,
+            min_value=0.01,
             value=20.0,
             step=0.5,
         )
 
-    with col2:
         u_value = st.number_input(
             "U-value (W/m²K)",
-            min_value=0.0,
-            value=1.20 if element_type in TRANSPARENT_ELEMENTS else 0.21,
+            min_value=0.01,
+            value=default_u_value(element_type),
             step=0.01,
             format="%.3f",
         )
 
+    with col2:
         orientation = st.selectbox(
             "Orientation",
             [
@@ -126,30 +155,81 @@ with st.form("add_fabric_element_form"):
             index=4 if element_type in TRANSPARENT_ELEMENTS else 9,
         )
 
-    with col3:
         pitch_degrees = st.number_input(
             "Pitch / tilt (degrees)",
             min_value=0.0,
             max_value=180.0,
-            value=30.0 if element_type in ["Roof", "Rooflight"] else 90.0,
+            value=default_pitch(element_type),
             step=1.0,
         )
 
-        element_notes = st.text_input(
-            "Notes / construction reference",
-            value="",
-            help="Optional note, for example construction type, source of U-value, or drawing reference.",
+        base_height_m = st.number_input(
+            "Base height (m)",
+            min_value=0.0,
+            value=0.0 if element_type != "Roof" else 2.7,
+            step=0.1,
         )
 
-    opaque_data = {}
-    glazing_data = {}
+    with col3:
+        height_m = st.number_input(
+            "Height (m)",
+            min_value=0.01,
+            value=2.7 if element_type not in ["Roof", "Ground floor"] else 6.0,
+            step=0.1,
+        )
 
-    if is_opaque_external(element_type, boundary_condition):
+        width_m = st.number_input(
+            "Width (m)",
+            min_value=0.01,
+            value=max(0.1, 20.0 / 2.7),
+            step=0.1,
+        )
+
+        mass_class = st.selectbox(
+            "Mass class",
+            [
+                "Lightweight",
+                "Medium",
+                "Heavy",
+                "Very heavy",
+                "Unknown",
+            ],
+            index=1,
+        )
+
+    st.subheader("Thermal mass")
+
+    col4, col5 = st.columns(2)
+
+    with col4:
+        areal_heat_capacity_kj_m2k = st.number_input(
+            "Areal heat capacity (kJ/m²K)",
+            min_value=0.0,
+            value=145.0 if element_type == "External wall" else 75.0,
+            step=5.0,
+        )
+
+    with col5:
+        notes = st.text_input("Notes", "")
+
+    extra_data = {}
+
+    if is_external_opaque(element_type):
         st.subheader("Opaque external surface properties")
 
-        s1, s2, s3, s4 = st.columns(4)
+        col6, col7 = st.columns(2)
 
-        with s1:
+        with col6:
+            solar_absorption_coeff = st.number_input(
+                "Solar absorption coefficient",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.60,
+                step=0.01,
+                format="%.2f",
+            )
+
+        with col7:
             surface_finish = st.selectbox(
                 "External surface finish",
                 [
@@ -161,87 +241,29 @@ with st.form("add_fabric_element_form"):
                 ],
             )
 
-        with s2:
-            solar_absorption_coeff = st.number_input(
-                "Solar absorption coefficient",
-                min_value=0.0,
-                max_value=1.0,
-                value=default_solar_absorption(surface_finish),
-                step=0.01,
-                format="%.2f",
-                help=(
-                    "Absorptance of the external opaque surface. "
-                    "Light finishes are lower; dark finishes are higher."
-                ),
-            )
-
-        with s3:
-            areal_heat_capacity = st.number_input(
-                "Areal heat capacity (kJ/m²K)",
-                min_value=0.0,
-                value=75.0,
-                step=5.0,
-                help="Approximate thermal mass per unit area for input checking.",
-            )
-
-        with s4:
-            mass_class = st.selectbox(
-                "Mass class",
-                [
-                    "Lightweight",
-                    "Medium",
-                    "Heavy",
-                    "Very heavy",
-                    "Unknown",
-                ],
-                index=1,
-            )
-
-        opaque_data = {
-            "surface_finish": surface_finish,
-            "solar_absorption_coeff": solar_absorption_coeff,
-            "areal_heat_capacity_kj_m2k": areal_heat_capacity,
-            "mass_class": mass_class,
-            "absorbed_solar_index_m2": area_m2 * solar_absorption_coeff,
-        }
-
-    else:
-        opaque_data = {
-            "surface_finish": None,
-            "solar_absorption_coeff": None,
-            "areal_heat_capacity_kj_m2k": None,
-            "mass_class": None,
-            "absorbed_solar_index_m2": 0.0,
-        }
+        extra_data.update(
+            {
+                "solar_absorption_coeff": solar_absorption_coeff,
+                "surface_finish": surface_finish,
+            }
+        )
 
     if element_type in TRANSPARENT_ELEMENTS:
-        st.subheader("Glazing solar and daylight properties")
+        st.subheader("Transparent element properties")
 
         g1, g2, g3, g4 = st.columns(4)
 
         with g1:
             g_value = st.number_input(
-                "g-value / solar transmittance",
+                "g-value",
                 min_value=0.0,
                 max_value=1.0,
-                value=0.63,
+                value=0.71,
                 step=0.01,
                 format="%.2f",
-                help="Solar energy transmittance of the glazing.",
             )
 
         with g2:
-            light_transmittance = st.number_input(
-                "Visible light transmittance",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.70,
-                step=0.01,
-                format="%.2f",
-                help="Approximate daylight transmittance of the glazing.",
-            )
-
-        with g3:
             frame_factor = st.number_input(
                 "Frame factor",
                 min_value=0.0,
@@ -249,73 +271,105 @@ with st.form("add_fabric_element_form"):
                 value=0.70,
                 step=0.01,
                 format="%.2f",
-                help="Fraction of window area that is glazed rather than frame.",
             )
 
-        with g4:
-            shading_factor = st.number_input(
-                "Shading factor",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.90,
-                step=0.01,
-                format="%.2f",
-                help="Reduction factor for shading, blinds, overhangs or obstructions.",
-            )
-
-        g5, g6 = st.columns(2)
-
-        with g5:
+        with g3:
             openable_fraction = st.number_input(
                 "Openable fraction",
                 min_value=0.0,
                 max_value=1.0,
-                value=0.50,
+                value=0.0,
                 step=0.05,
                 format="%.2f",
-                help="Approximate openable portion of the window area.",
             )
 
-        with g6:
-            shading_device = st.selectbox(
-                "Shading / blind type",
-                [
-                    "None",
-                    "Internal blind",
-                    "External shading",
-                    "Overhang",
-                    "Curtains",
-                    "User-defined",
-                ],
+        with g4:
+            free_area_height_m = st.number_input(
+                "Free area height (m)",
+                min_value=0.0,
+                value=0.2,
+                step=0.1,
             )
 
-        glazing_data = {
-            "g_value": g_value,
-            "visible_light_transmittance": light_transmittance,
-            "frame_factor": frame_factor,
-            "shading_factor": shading_factor,
-            "openable_fraction": openable_fraction,
-            "shading_device": shading_device,
-            "effective_solar_area_m2": area_m2 * frame_factor * g_value * shading_factor,
-            "effective_daylight_area_m2": area_m2
-            * frame_factor
-            * light_transmittance
-            * shading_factor,
-        }
+        extra_data.update(
+            {
+                "g_value": g_value,
+                "frame_factor": frame_factor,
+                "openable_fraction": openable_fraction,
+                "free_area_height_m": free_area_height_m,
+            }
+        )
 
-    else:
-        glazing_data = {
-            "g_value": None,
-            "visible_light_transmittance": None,
-            "frame_factor": None,
-            "shading_factor": None,
-            "openable_fraction": None,
-            "shading_device": None,
-            "effective_solar_area_m2": 0.0,
-            "effective_daylight_area_m2": 0.0,
-        }
+    if element_type == "Ground floor":
+        st.subheader("Ground floor properties")
 
-    add_element = st.form_submit_button("Add element")
+        g1, g2, g3 = st.columns(3)
+
+        with g1:
+            perimeter_m = st.number_input(
+                "Perimeter (m)",
+                min_value=0.0,
+                value=28.0,
+                step=0.5,
+            )
+
+        with g2:
+            thickness_walls_m = st.number_input(
+                "Wall thickness at floor edge (m)",
+                min_value=0.0,
+                value=0.1705,
+                step=0.01,
+                format="%.4f",
+            )
+
+        with g3:
+            psi_wall_floor_junc = st.number_input(
+                "ψ wall-floor junction (W/mK)",
+                value=0.0,
+                step=0.01,
+                format="%.3f",
+            )
+
+        floor_type = st.selectbox(
+            "Ground floor type",
+            [
+                "Slab_no_edge_insulation",
+                "Slab_edge_insulation",
+                "Suspended_floor",
+                "Heated_basement",
+                "Unheated_basement",
+            ],
+        )
+
+        extra_data.update(
+            {
+                "perimeter_m": perimeter_m,
+                "thickness_walls_m": thickness_walls_m,
+                "psi_wall_floor_junc": psi_wall_floor_junc,
+                "floor_type": floor_type,
+            }
+        )
+
+    if element_type == "Party wall":
+        st.subheader("Party wall properties")
+
+        party_wall_cavity_type = st.selectbox(
+            "Party wall cavity type",
+            [
+                "solid",
+                "unfilled_unsealed",
+                "filled",
+                "defined_resistance",
+            ],
+        )
+
+        extra_data.update(
+            {
+                "party_wall_cavity_type": party_wall_cavity_type,
+            }
+        )
+
+    add_element = st.form_submit_button("Add fabric element")
 
 
 if add_element:
@@ -323,26 +377,27 @@ if add_element:
         {
             "name": element_name,
             "type": element_type,
-            "boundary_condition": boundary_condition,
             "area_m2": area_m2,
             "u_value_w_m2k": u_value,
             "orientation": orientation,
             "pitch_degrees": pitch_degrees,
-            "heat_loss_coefficient_w_k": area_m2 * u_value,
-            "notes": element_notes,
-            **opaque_data,
-            **glazing_data,
+            "base_height_m": base_height_m,
+            "height_m": height_m,
+            "width_m": width_m,
+            "mass_class": mass_class,
+            "areal_heat_capacity_kj_m2k": areal_heat_capacity_kj_m2k,
+            "notes": notes,
+            **extra_data,
         }
     )
 
-    st.session_state["fabric_inputs_saved"] = False
     st.success(f"Added fabric element: {element_name}")
 
 
-st.subheader("Fabric element list")
+st.header("2. Fabric elements to be written to HEM")
 
 if not st.session_state["fabric_elements"]:
-    st.warning("No fabric elements have been added yet.")
+    st.warning("No fabric elements added yet.")
 else:
     df = pd.DataFrame(st.session_state["fabric_elements"])
 
@@ -353,146 +408,186 @@ else:
     )
 
     total_area = df["area_m2"].sum()
-    total_hlc = df["heat_loss_coefficient_w_k"].sum()
-    average_u_value = total_hlc / total_area if total_area > 0 else 0
+    fabric_hlc = (df["area_m2"] * df["u_value_w_m2k"]).sum()
+    average_u = fabric_hlc / total_area if total_area > 0 else 0
 
-    glazing_df = df[df["type"].isin(TRANSPARENT_ELEMENTS)].copy()
-    opaque_external_df = df[
-        (df["boundary_condition"] == "External")
-        & (df["type"].isin(OPAQUE_ELEMENTS))
-    ].copy()
-
-    total_glazing_area = glazing_df["area_m2"].sum() if not glazing_df.empty else 0
-    total_effective_solar_area = (
-        glazing_df["effective_solar_area_m2"].sum() if not glazing_df.empty else 0
-    )
-    total_effective_daylight_area = (
-        glazing_df["effective_daylight_area_m2"].sum() if not glazing_df.empty else 0
-    )
-    total_absorbed_solar_index = (
-        opaque_external_df["absorbed_solar_index_m2"].sum()
-        if not opaque_external_df.empty
-        else 0
-    )
-
-    st.subheader("Fabric summary")
-
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric("Total fabric area", f"{total_area:.1f} m²")
+        st.metric("Total area", f"{total_area:.1f} m²")
 
     with col2:
-        st.metric("Fabric HLC", f"{total_hlc:.1f} W/K")
+        st.metric("Input HLC indicator", f"{fabric_hlc:.1f} W/K")
 
     with col3:
-        st.metric("Area-weighted U-value", f"{average_u_value:.3f} W/m²K")
+        st.metric("Area-weighted U-value", f"{average_u:.3f} W/m²K")
 
-    with col4:
-        st.metric("Glazing area", f"{total_glazing_area:.1f} m²")
+    st.subheader("Input HLC contribution")
+    chart_df = df.copy()
+    chart_df["hlc_w_k"] = chart_df["area_m2"] * chart_df["u_value_w_m2k"]
+    st.bar_chart(chart_df[["name", "hlc_w_k"]].set_index("name"))
 
-    st.subheader("Solar and daylight input summary")
+    if st.button("Clear all fabric elements"):
+        st.session_state["fabric_elements"] = []
+        st.rerun()
 
-    gcol1, gcol2, gcol3, gcol4 = st.columns(4)
 
-    with gcol1:
-        st.metric("Opaque absorption index", f"{total_absorbed_solar_index:.2f} m²")
+st.header("3. Build HEM JSON and run")
 
-    with gcol2:
-        st.metric("Glazing effective solar area", f"{total_effective_solar_area:.2f} m²")
+if not st.session_state["fabric_elements"]:
+    st.warning("Add at least one fabric element before building the HEM JSON.")
+else:
+    if st.button("Build generated fabric HEM JSON"):
+        try:
+            generated_input = build_generated_fabric_input(
+                base_json_path=BASE_JSON_PATH,
+                output_json_path=GENERATED_FABRIC_INPUT_PATH,
+                fabric_elements=st.session_state["fabric_elements"],
+                zone_name="zone 1",
+            )
 
-    with gcol3:
-        st.metric(
-            "Glazing effective daylight area",
-            f"{total_effective_daylight_area:.2f} m²",
-        )
+            st.session_state["generated_fabric_input_ready"] = True
 
-    with gcol4:
-        glazing_ratio = total_glazing_area / total_area * 100 if total_area > 0 else 0
-        st.metric("Glazing-to-fabric ratio", f"{glazing_ratio:.1f}%")
+            st.success(f"Generated HEM input saved to: {GENERATED_FABRIC_INPUT_PATH}")
 
-    st.subheader("Element heat-loss contribution")
+            with st.expander(
+                "Preview generated Zone -> zone 1 -> BuildingElement JSON",
+                expanded=True,
+            ):
+                st.json(generated_input["Zone"]["zone 1"]["BuildingElement"])
 
-    chart_df = df[["name", "heat_loss_coefficient_w_k"]].set_index("name")
-    st.bar_chart(chart_df)
+        except Exception as exc:
+            st.error("Failed to build generated HEM fabric input.")
+            st.exception(exc)
 
-    if not opaque_external_df.empty:
-        st.subheader("Opaque surface absorption contribution")
+    if st.session_state.get("generated_fabric_input_ready"):
+        if st.button("Run HEM with generated fabric input"):
+            with st.spinner("Running HEM..."):
+                result = run_hem_model(GENERATED_FABRIC_INPUT_PATH, WEATHER_FILE)
 
-        absorption_chart_df = opaque_external_df[
-            ["name", "absorbed_solar_index_m2"]
-        ].set_index("name")
-        st.bar_chart(absorption_chart_df)
+            if result.returncode == 0:
+                st.success("HEM run completed successfully.")
 
-    if not glazing_df.empty:
-        st.subheader("Glazing solar contribution")
+                if FABRIC_SUMMARY_PATH.exists():
+                    summary_text = FABRIC_SUMMARY_PATH.read_text(encoding="utf-8")
 
-        solar_chart_df = glazing_df[["name", "effective_solar_area_m2"]].set_index(
-            "name"
-        )
-        st.bar_chart(solar_chart_df)
+                    st.subheader("HEM result comparison")
 
-    st.subheader("Element contribution table")
+                    if BASE_SUMMARY_PATH.exists():
+                        comparison = compare_summary_metrics(
+                            BASE_SUMMARY_PATH,
+                            FABRIC_SUMMARY_PATH,
+                        )
 
-    df_display = df.copy()
-    df_display["share_of_fabric_hlc_percent"] = (
-        df_display["heat_loss_coefficient_w_k"] / total_hlc * 100
-        if total_hlc > 0
-        else 0
-    )
+                        col1, col2, col3 = st.columns(3)
 
-    columns_to_show = [
-        "name",
-        "type",
-        "boundary_condition",
-        "area_m2",
-        "u_value_w_m2k",
-        "orientation",
-        "pitch_degrees",
-        "solar_absorption_coeff",
-        "surface_finish",
-        "g_value",
-        "visible_light_transmittance",
-        "frame_factor",
-        "shading_factor",
-        "heat_loss_coefficient_w_k",
-        "absorbed_solar_index_m2",
-        "effective_solar_area_m2",
-        "effective_daylight_area_m2",
-        "share_of_fabric_hlc_percent",
-    ]
+                        space_heat = next(
+                            item
+                            for item in comparison
+                            if item["metric"] == "Space heat demand"
+                        )
 
-    st.dataframe(
-        df_display[columns_to_show],
-        use_container_width=True,
-        hide_index=True,
-    )
+                        peak_elec = next(
+                            item
+                            for item in comparison
+                            if item["metric"] == "Peak electricity consumption"
+                        )
 
-    st.subheader("Save fabric inputs")
+                        delivered = next(
+                            item
+                            for item in comparison
+                            if item["metric"] == "Delivered energy total"
+                        )
 
-    col_save, col_clear = st.columns(2)
+                        with col1:
+                            st.metric(
+                                "Space heat demand",
+                                (
+                                    f"{format_number(space_heat['generated_value'])} "
+                                    f"{space_heat['unit']}"
+                                ),
+                                (
+                                    f"{format_number(space_heat['difference'])} "
+                                    f"{space_heat['unit']}"
+                                ),
+                            )
 
-    with col_save:
-        if st.button("Save fabric inputs"):
-            st.session_state["fabric_inputs_saved"] = True
-            st.session_state["fabric_summary"] = {
-                "total_fabric_area_m2": total_area,
-                "fabric_hlc_w_k": total_hlc,
-                "area_weighted_u_value_w_m2k": average_u_value,
-                "total_glazing_area_m2": total_glazing_area,
-                "opaque_absorption_index_m2": total_absorbed_solar_index,
-                "effective_solar_area_m2": total_effective_solar_area,
-                "effective_daylight_area_m2": total_effective_daylight_area,
-                "glazing_ratio_percent": glazing_ratio,
-            }
-            st.success("Fabric inputs saved.")
+                        with col2:
+                            st.metric(
+                                "Peak electricity",
+                                (
+                                    f"{format_number(peak_elec['generated_value'])} "
+                                    f"{peak_elec['unit']}"
+                                ),
+                                (
+                                    f"{format_number(peak_elec['difference'])} "
+                                    f"{peak_elec['unit']}"
+                                ),
+                            )
 
-    with col_clear:
-        if st.button("Clear all fabric elements"):
-            st.session_state["fabric_elements"] = []
-            st.session_state["fabric_inputs_saved"] = False
-            st.rerun()
+                        with col3:
+                            st.metric(
+                                "Delivered energy",
+                                (
+                                    f"{format_number(delivered['generated_value'])} "
+                                    f"{delivered['unit']}"
+                                ),
+                                (
+                                    f"{format_number(delivered['difference'])} "
+                                    f"{delivered['unit']}"
+                                ),
+                            )
 
-    if st.session_state["fabric_inputs_saved"]:
-        st.success("Fabric inputs are currently saved.")
-        st.json(st.session_state["fabric_summary"])
+                        st.subheader("Base vs generated case comparison")
+
+                        comparison_rows = []
+                        for item in comparison:
+                            comparison_rows.append(
+                                {
+                                    "Metric": item["metric"],
+                                    "Base value": item["base_value"],
+                                    "Generated value": item["generated_value"],
+                                    "Difference": item["difference"],
+                                    "Percent change": item["percent_change"],
+                                    "Unit": item["unit"],
+                                }
+                            )
+
+                        st.dataframe(
+                            comparison_rows,
+                            use_container_width=True,
+                            hide_index=True,
+                        )
+
+                    else:
+                        st.warning(
+                            "Base summary file was not found. "
+                            "Run the base demo case first if comparison is needed."
+                        )
+
+                    st.subheader("HEM summary output")
+                    st.text(summary_text)
+
+                    st.download_button(
+                        "Download HEM summary CSV",
+                        data=summary_text,
+                        file_name="generated_fabric_case__core__results_summary.csv",
+                        mime="text/csv",
+                    )
+
+                else:
+                    st.warning("HEM ran, but the expected summary file was not found.")
+
+            else:
+                st.error("HEM run failed.")
+                st.subheader("Error output")
+                st.code(result.stderr)
+
+                if result.stdout:
+                    st.subheader("Model output")
+                    st.code(result.stdout)
+
+
+st.header("4. Saved fabric input state")
+
+st.json(st.session_state.get("fabric_elements", []))
