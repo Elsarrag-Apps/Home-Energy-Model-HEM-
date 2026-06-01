@@ -50,14 +50,79 @@ DEFAULT_WEATHER_FILE = Path("test/e2e/demo_files/London_weather_CIBSE_format.csv
 active_project = get_active_project()
 
 if active_project is None:
-    st.error("No active project loaded. Go to the Home page and upload/load a JSON first.")
+    st.error("No active project loaded. Go to Project Setup and upload/load a JSON first.")
     st.stop()
 
 if not ACTIVE_HEM_INPUT_PATH.exists():
-    st.error("No active HEM input file found. Go to the Home page and upload/load a HEM JSON first.")
+    st.error("No active HEM input file found. Go to Project Setup and upload/load a HEM JSON first.")
     st.stop()
 
 project_data = active_project.get("project_data", {})
+project_setup = project_data.get("project_setup", {})
+
+
+def build_project_report_text(
+    active_project_data: dict,
+    generated_case_path: Path,
+    summary_path: Path,
+    weather_file: Path,
+) -> str:
+    project_sections = active_project_data.get("project_data", {})
+    setup = project_sections.get("project_setup", {})
+
+    fabric_rows = project_sections.get("fabric_elements", [])
+    ventilation = project_sections.get("ventilation", {})
+    thermal_bridges = project_sections.get("thermal_bridges", [])
+    space_heat_systems = project_sections.get("space_heat_systems", {})
+    hot_water = project_sections.get("hot_water", {})
+    gains_controls = project_sections.get("gains_controls", {})
+    energy_supply = project_sections.get("energy_supply", {})
+
+    lines = []
+    lines.append("Home Energy Model App - Project Summary")
+    lines.append("=" * 45)
+    lines.append("")
+    lines.append("Project details")
+    lines.append("-" * 15)
+    lines.append(f"Project name: {setup.get('project_name', 'Not set')}")
+    lines.append(f"Case ID: {setup.get('case_id', 'Not set')}")
+    lines.append(f"Assessor: {setup.get('assessor', 'Not set')}")
+    lines.append(f"Dwelling type: {setup.get('dwelling_type', 'Not set')}")
+    lines.append(f"Assessment type: {setup.get('assessment_type', 'Not set')}")
+    lines.append(f"Floor area: {setup.get('floor_area_m2', 'Not set')} m2")
+    lines.append(f"Internal volume: {setup.get('internal_volume_m3', 'Not set')} m3")
+    lines.append("")
+    lines.append("Saved model inputs")
+    lines.append("-" * 18)
+    lines.append(f"Fabric rows: {len(fabric_rows)}")
+    lines.append(
+        "Ventilation: "
+        + ("saved" if ventilation.get("airtightness_exposure") else "not saved")
+    )
+    lines.append(f"Thermal bridges: {len(thermal_bridges)}")
+    lines.append(
+        f"Heating systems: {len(space_heat_systems) if isinstance(space_heat_systems, dict) else 0}"
+    )
+    lines.append("Hot water: " + ("saved" if hot_water else "not saved"))
+    lines.append("Internal gains / controls: " + ("saved" if gains_controls else "not saved"))
+    lines.append("Energy supply: " + ("saved" if energy_supply else "not saved"))
+    lines.append("")
+    lines.append("Run setup")
+    lines.append("-" * 9)
+    lines.append(f"Weather file: {weather_file}")
+    lines.append(f"Generated HEM input: {generated_case_path}")
+    lines.append(f"HEM summary output: {summary_path}")
+    lines.append("")
+
+    if summary_path.exists():
+        lines.append("HEM summary output")
+        lines.append("-" * 18)
+        lines.append(summary_path.read_text(encoding="utf-8"))
+    else:
+        lines.append("HEM summary output: not available yet.")
+
+    return "\n".join(lines)
+
 
 st.header("1. Project build summary")
 
@@ -69,6 +134,24 @@ space_heat_systems = project_data.get("space_heat_systems", {})
 hot_water = project_data.get("hot_water", {})
 gains_controls = project_data.get("gains_controls", {})
 energy_supply = project_data.get("energy_supply", {})
+
+if project_setup:
+    st.subheader("Project")
+    p1, p2, p3, p4 = st.columns(4)
+
+    with p1:
+        st.metric("Project name", project_setup.get("project_name", "Not set"))
+
+    with p2:
+        st.metric("Case ID", project_setup.get("case_id", "Not set"))
+
+    with p3:
+        st.metric("Floor area", f"{project_setup.get('floor_area_m2', 'Not set')} m2")
+
+    with p4:
+        st.metric("Dwelling type", project_setup.get("dwelling_type", "Not set"))
+
+st.subheader("Saved input status")
 
 col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
 
@@ -105,6 +188,7 @@ with col8:
         "Yes" if weather_settings.get("weather_file") else "Default",
     )
 
+
 st.header("2. Pre-run checks")
 
 validation_messages = validate_project_before_run(
@@ -131,6 +215,7 @@ else:
 
 blocking_errors = has_blocking_errors(validation_messages)
 
+
 st.header("3. Weather used for this run")
 
 weather_file = Path(
@@ -150,6 +235,7 @@ with w1:
 
 with w2:
     st.write(str(weather_file))
+
 
 st.header("4. Build generated HEM input")
 
@@ -190,6 +276,7 @@ if st.session_state.get("generated_full_case_ready"):
         else:
             st.write("No generated case found.")
 
+
 st.header("5. Run HEM and compare results")
 
 if blocking_errors:
@@ -207,6 +294,8 @@ else:
             if GENERATED_SUMMARY_PATH.exists():
                 summary_text = GENERATED_SUMMARY_PATH.read_text(encoding="utf-8")
 
+                st.session_state["last_hem_summary_text"] = summary_text
+
                 st.subheader("Results comparison")
 
                 if BASE_SUMMARY_PATH.exists():
@@ -214,6 +303,8 @@ else:
                         BASE_SUMMARY_PATH,
                         GENERATED_SUMMARY_PATH,
                     )
+
+                    st.session_state["last_results_comparison"] = comparison
 
                     col1, col2, col3, col4 = st.columns(4)
 
@@ -285,24 +376,6 @@ else:
                 with st.expander("View full HEM summary output", expanded=False):
                     st.text(summary_text)
 
-                st.download_button(
-                    "Download HEM summary CSV",
-                    data=summary_text,
-                    file_name="generated_full_project_case__core__results_summary.csv",
-                    mime="text/csv",
-                )
-
-                generated_json_text = GENERATED_FULL_CASE_PATH.read_text(
-                    encoding="utf-8"
-                )
-
-                st.download_button(
-                    "Download generated HEM input JSON",
-                    data=generated_json_text,
-                    file_name="generated_full_project_case.json",
-                    mime="application/json",
-                )
-
             else:
                 st.warning("HEM ran, but the expected summary file was not found.")
 
@@ -333,6 +406,60 @@ else:
                 if result.stdout:
                     st.subheader("Model output")
                     st.code(result.stdout)
+
+
+st.header("6. Downloads and project report")
+
+project_json = json.dumps(active_project, indent=2)
+
+download_col1, download_col2, download_col3 = st.columns(3)
+
+with download_col1:
+    st.download_button(
+        "Download saved app project JSON",
+        data=project_json,
+        file_name="saved_app_project.json",
+        mime="application/json",
+    )
+
+with download_col2:
+    if GENERATED_FULL_CASE_PATH.exists():
+        st.download_button(
+            "Download generated HEM input JSON",
+            data=GENERATED_FULL_CASE_PATH.read_text(encoding="utf-8"),
+            file_name="generated_full_project_case.json",
+            mime="application/json",
+        )
+    else:
+        st.caption("Generated HEM input is not available yet.")
+
+with download_col3:
+    if GENERATED_SUMMARY_PATH.exists():
+        st.download_button(
+            "Download HEM summary CSV",
+            data=GENERATED_SUMMARY_PATH.read_text(encoding="utf-8"),
+            file_name="generated_full_project_case__core__results_summary.csv",
+            mime="text/csv",
+        )
+    else:
+        st.caption("HEM summary CSV is not available yet.")
+
+report_text = build_project_report_text(
+    active_project_data=active_project,
+    generated_case_path=GENERATED_FULL_CASE_PATH,
+    summary_path=GENERATED_SUMMARY_PATH,
+    weather_file=weather_file,
+)
+
+st.download_button(
+    "Download simple project report TXT",
+    data=report_text,
+    file_name="hem_project_summary_report.txt",
+    mime="text/plain",
+)
+
+with st.expander("Preview simple project report", expanded=False):
+    st.text(report_text)
 
 with st.expander("Developer/debug: saved project data used for this run", expanded=False):
     st.json(project_data)
