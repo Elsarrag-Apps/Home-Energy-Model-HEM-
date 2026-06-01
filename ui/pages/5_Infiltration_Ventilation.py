@@ -1,4 +1,3 @@
-import json
 import sys
 from pathlib import Path
 
@@ -11,6 +10,7 @@ sys.path.append(str(UTILS_DIR))
 
 from input_builder import build_generated_hem_input
 from model_runner import run_hem_model
+from results_parser import compare_summary_metrics, format_number
 
 
 st.set_page_config(
@@ -28,14 +28,22 @@ st.write(
 
 BASE_JSON_PATH = Path("test/e2e/demo_files/short/demo.json")
 WEATHER_FILE = Path("test/e2e/demo_files/London_weather_CIBSE_format.csv")
+
 GENERATED_INPUT_PATH = Path("ui/temp/generated_ventilation_case.json")
+
 SUMMARY_PATH = Path(
     "ui/temp/generated_ventilation_case__results/"
     "generated_ventilation_case__core__results_summary.csv"
 )
+
 CORE_RESULTS_PATH = Path(
     "ui/temp/generated_ventilation_case__results/"
     "generated_ventilation_case__core__results.csv"
+)
+
+BASE_SUMMARY_PATH = Path(
+    "test/e2e/demo_files/short/demo__results/"
+    "demo__core__results_summary.csv"
 )
 
 st.info(
@@ -404,7 +412,10 @@ else:
 
         st.success(f"Generated HEM input saved to: {GENERATED_INPUT_PATH}")
 
-        with st.expander("Preview generated InfiltrationVentilation JSON", expanded=True):
+        with st.expander(
+            "Preview generated InfiltrationVentilation JSON",
+            expanded=True,
+        ):
             st.json(generated_input["InfiltrationVentilation"])
 
     if st.session_state.get("generated_ventilation_input_ready"):
@@ -418,15 +429,131 @@ else:
                 if SUMMARY_PATH.exists():
                     summary_text = SUMMARY_PATH.read_text(encoding="utf-8")
 
+                    st.subheader("HEM result comparison")
+
+                    if BASE_SUMMARY_PATH.exists():
+                        comparison = compare_summary_metrics(
+                            BASE_SUMMARY_PATH,
+                            SUMMARY_PATH,
+                        )
+
+                        col1, col2, col3, col4 = st.columns(4)
+
+                        space_heat = next(
+                            item
+                            for item in comparison
+                            if item["metric"] == "Space heat demand"
+                        )
+
+                        peak_elec = next(
+                            item
+                            for item in comparison
+                            if item["metric"] == "Peak electricity consumption"
+                        )
+
+                        delivered = next(
+                            item
+                            for item in comparison
+                            if item["metric"] == "Delivered energy total"
+                        )
+
+                        mech_vent = next(
+                            item
+                            for item in comparison
+                            if item["metric"] == "Mechanical ventilation energy"
+                        )
+
+                        with col1:
+                            st.metric(
+                                "Space heat demand",
+                                (
+                                    f"{format_number(space_heat['generated_value'])} "
+                                    f"{space_heat['unit']}"
+                                ),
+                                (
+                                    f"{format_number(space_heat['difference'])} "
+                                    f"{space_heat['unit']}"
+                                ),
+                            )
+
+                        with col2:
+                            st.metric(
+                                "Peak electricity",
+                                (
+                                    f"{format_number(peak_elec['generated_value'])} "
+                                    f"{peak_elec['unit']}"
+                                ),
+                                (
+                                    f"{format_number(peak_elec['difference'])} "
+                                    f"{peak_elec['unit']}"
+                                ),
+                            )
+
+                        with col3:
+                            st.metric(
+                                "Delivered energy",
+                                (
+                                    f"{format_number(delivered['generated_value'])} "
+                                    f"{delivered['unit']}"
+                                ),
+                                (
+                                    f"{format_number(delivered['difference'])} "
+                                    f"{delivered['unit']}"
+                                ),
+                            )
+
+                        with col4:
+                            st.metric(
+                                "Mechanical ventilation",
+                                (
+                                    f"{format_number(mech_vent['generated_value'])} "
+                                    f"{mech_vent['unit']}"
+                                ),
+                                (
+                                    f"{format_number(mech_vent['difference'])} "
+                                    f"{mech_vent['unit']}"
+                                ),
+                            )
+
+                        st.subheader("Base vs generated case comparison")
+
+                        comparison_rows = []
+                        for item in comparison:
+                            comparison_rows.append(
+                                {
+                                    "Metric": item["metric"],
+                                    "Base value": item["base_value"],
+                                    "Generated value": item["generated_value"],
+                                    "Difference": item["difference"],
+                                    "Percent change": item["percent_change"],
+                                    "Unit": item["unit"],
+                                }
+                            )
+
+                        st.dataframe(
+                            comparison_rows,
+                            use_container_width=True,
+                            hide_index=True,
+                        )
+
+                    else:
+                        st.warning(
+                            "Base summary file was not found. "
+                            "Run the base demo case first if comparison is needed."
+                        )
+
                     st.subheader("HEM summary output")
                     st.text(summary_text)
 
                     st.download_button(
                         "Download HEM summary CSV",
                         data=summary_text,
-                        file_name="generated_ventilation_case__core__results_summary.csv",
+                        file_name=(
+                            "generated_ventilation_case__core__results_summary.csv"
+                        ),
                         mime="text/csv",
                     )
+
                 else:
                     st.warning("HEM ran, but the expected summary file was not found.")
 
