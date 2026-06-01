@@ -1,0 +1,45 @@
+# Ignore .pyc files
+/**/*.pyc
+/**/__pycache__/*
+
+# Ignore Python Virtual Environment
+.venv/
+
+# Ignore package build directory
+dist/
+
+# Ignore Eclipse project config files
+/.project
+/.pydevproject
+
+# Ignore Visual Studio project config files
+/.vs
+
+# Ignore InteliJ/PyCharm project config files
+.idea/
+
+# Ignore Cython build related files
+*.pyd
+*.c
+*.so
+build_directory/
+
+# Ignore development tool caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+
+# Ignore coverage reports
+.coverage
+coverage.json
+coverage.xml
+htmlcov/
+# pytest-azurepipelines output
+test-output.xml
+
+# Ignore calculation results, except those used for e2e test comparison
+/**/*__results/*
+!/test/e2e/expected_results/**/*__results/*
+
+# Ignore jupyter notebook checkpoint files
+/**/.ipynb_checkpoints/

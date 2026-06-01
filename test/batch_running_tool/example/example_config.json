@@ -1,0 +1,65 @@
+{
+    "base_case":{
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"]
+    },
+    "heat_schedule_tests": {
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "wrapper_postproc":{
+            "heating_schedule":["bi_z1_21_z2_off", "bi_z1_21_z2_16"]
+            }
+    },
+    "wet_room_count_test": {
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "wrapper_preproc":{
+            "wet_rooms_count":["1_wr","2_wr"]
+            }
+    },
+    "PV_test": {
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "energy_generated": ["PV_1", "PV_2", "PV_3"]
+    },
+    "base_fabric": {
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "simplified_fabric" : ["simple_fabric"]
+    },
+    "base_heatpump":{
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "heat_source_wet":["hp"],
+        "space_heat_emitters":["hp_no_wc"],
+        "hot_water_source":["cylinder_hp"]
+        },
+    "hot_water_test":{
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "hot_water_source":["immersion"],
+        "hot_water_distribution":["distribution"],
+        "hot_water_outlets":["water_outlets"]
+        },
+    "direct_elec_test":{
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "space_heat_emitters":["direct_electric"]
+        },
+    "combined_wet_rooms_&_heat_schedule_test": {
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "wrapper_preproc":{
+            "wet_rooms_count":["1_wr","2_wr"]
+            },
+        "wrapper_postproc":{
+            "heating_schedule":["bi_z1_21_z2_off", "bi_z1_21_z2_16"]
+            }
+    },
+    "tariff_file":{
+        "base_json":["ESPr_DE"],
+        "wrapper_flags":["future-homes-standard"],
+        "tariff_file":["tariff_data_25-06-2024"],
+        "heat_battery":["heat_battery"]
+    }
+}

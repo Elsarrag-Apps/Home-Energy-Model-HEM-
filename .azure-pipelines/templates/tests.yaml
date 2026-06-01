@@ -1,0 +1,54 @@
+# Run unit and end-to-end tests, optionally with coverage.
+---
+parameters:
+  - name: end_to_end
+    type: boolean
+    default: true
+  - name: coverage  # and'ed with the report_test_coverage matrix variable.
+    type: boolean
+    default: true
+  - name: pytest_extra_args
+    type: string
+    default: ""
+
+steps:
+
+  # Publishes the test results and coverage report.
+  # Although it has bugs for the coverage report's stylesheets...
+  # Could be replaced by manual calls to:
+  # - PublishTestResults@2
+  # - PublishCodeCoverageResults@2
+  - script: |
+      uv pip install pytest-azurepipelines
+    displayName: Install pytest-azurepipelines
+
+  - bash: |
+      echo "##vso[task.setvariable variable=coverage_args;] --cov --cov-report=html"
+    displayName: Set coverage arguments
+    condition: and(${{ eq(parameters.coverage, true) }}, variables.report_test_coverage)  # Easier than using bash conditions for == "true"
+
+  - bash: |
+      echo "##vso[task.setvariable variable=coverage_args;]" --no-cov --no-coverage-upload""
+    displayName: Set no coverage arguments
+    condition: not(and(${{ eq(parameters.coverage, true) }}, variables.report_test_coverage))
+
+  - script: |
+      uv run pytest -vvv test/integration/ --no-docker-discovery --no-cov --no-coverage-upload
+    displayName: Integration tests
+
+  - script: |
+      uv run pytest test/unit_tests/ $(coverage_args) ${{ parameters.pytest_extra_args }} --test-run-title="Unit tests - $(Agent.OS)"
+    displayName: Unit tests
+
+  - script: |
+      uv run pytest test/e2e/ --no-cov --no-coverage-upload ${{ parameters.pytest_extra_args }} --test-run-title="End-to-end tests - $(Agent.OS)"
+    displayName: End-to-end tests
+    # Never run e2e tests with coverage reports.
+    # We will run manual coverage checks occasionally, but doing it on CI dramatically increases the runtime of builds.
+    condition: and(succeeded(), ${{ parameters.end_to_end }})
+
+  - script: |
+      uv run coverage json
+      uv run coverage-threshold
+    displayName: Coverage thresholds
+    condition: and(succeeded(), ${{ parameters.coverage }})

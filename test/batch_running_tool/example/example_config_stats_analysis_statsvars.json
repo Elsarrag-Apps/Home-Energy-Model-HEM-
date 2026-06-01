@@ -1,0 +1,30 @@
+{"variables": {
+  "annual_vars": [
+    "space heat demand Total",
+    "DHW: demand energy (including distribution pipework losses)",
+    "Ventilation Systems",
+    "Lighting Energy Use",
+    "Pumps and Fans Energy Use",
+    "PV Generation"
+  ],
+  "month_vars": [
+    "internal air temp Average"
+  ],
+  "week_vars": [
+    "operative temp Average",
+    "internal air temp Average",
+    "Space Heat Output",
+    "Space Cooling Output"
+  ],
+  "zone_vars": [
+    "operative temp",
+    "internal air temp"
+  ]
+},
+  "settings": {
+    "weeks": [
+    "Winter_Week",
+    "Spring_Week",
+    "Summer_Week"
+  ]}
+}

@@ -1,0 +1,16 @@
+{
+    "DE_SH_bi_z1_21_z2_off": {
+        "base_json":["sensitivity_DE_base"],
+        "wrapper_flags":["future-homes-standard"],
+        "wrapper_postproc": {
+            "heating_schedule":["bi_z1_21_z2_off"]
+            }
+    },
+    "DE_SH_bi_z1_21_z2_16": {
+        "base_json":["sensitivity_DE_base"],
+        "wrapper_flags":["future-homes-standard"],
+        "wrapper_postproc": {
+            "heating_schedule":["bi_z1_21_z2_16"]
+            }
+    }
+}

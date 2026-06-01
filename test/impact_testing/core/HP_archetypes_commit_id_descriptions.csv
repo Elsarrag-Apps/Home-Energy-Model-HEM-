@@ -1,0 +1,4 @@
+commit_id,test_suite_id,chronology,date,description
+7b619b5e,HEM_V024_FHS_V018,1,2023-12-13,HEM v0.24 FHS 0.18
+b01f46ac,HEM_V028_FHS_V019,2,2024-03-01,Last consultation version (HEM v0.28) Includes: WWHRS fix and PV solar fix
+334e5a38,HEM_DLUHC,3,2024-06-17,release version for testing HEM v0.30

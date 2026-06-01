@@ -1,0 +1,46 @@
+{
+  "per_file": {
+    "test/e2e/demo_files/short/demo_hp_with_setback_separate_ieh_plus_cooling.json": {
+      "hem_arguments": [
+        "--CIBSE-weather-file",
+        "test/e2e/demo_files/London_weather_CIBSE_format.csv",
+        "--tariff-file",
+        "test/e2e/demo_files/tariff_data_25-06-2024.csv"
+      ],
+      "note": "Run without detailed outputs, inconsistency run-to-run"
+    }
+  },
+  "file_patterns": {
+    "test/e2e/demo_files/short/demo_FHS*.json": {
+      "hem_arguments": [
+        "--CIBSE-weather-file",
+        "test/e2e/demo_files/London_weather_CIBSE_format.csv",
+        "--tariff-file",
+        "test/e2e/demo_files/tariff_data_25-06-2024.csv",
+        "--detailed-output-heating-cooling",
+        "--heat-balance"
+      ],
+      "note": "Formerly-FHS demo files."
+    },
+    "test/e2e/demo_files/short/*.json": {
+      "hem_arguments": [
+        "--CIBSE-weather-file",
+        "test/e2e/demo_files/London_weather_CIBSE_format.csv",
+        "--tariff-file",
+        "test/e2e/demo_files/tariff_data_demo_files_24timesteps.csv",
+        "--detailed-output-heating-cooling",
+        "--heat-balance"
+      ],
+      "note": "Short running demo files, with detailed outputs."
+    },
+    "test/e2e/demo_files/long/*.json": {
+      "hem_arguments": [
+        "--CIBSE-weather-file",
+        "test/e2e/demo_files/London_weather_CIBSE_format.csv",
+        "--tariff-file",
+        "test/e2e/demo_files/tariff_data_demo_files_24timesteps.csv"
+      ],
+      "note": "Long running demo files, without detailed outputs."
+    }
+  }
+}

@@ -1,0 +1,26 @@
+# A template to install uv, a python virtual environment, and the dependencies.
+---
+steps:
+  - script: |
+      pipx install uv
+    displayName: Install uv
+
+  # Cache the uv cache to save time between pipeline runs where dependencies haven't changed.
+  - task: Cache@2
+    displayName: Setup uv cache
+    inputs:
+      key: '"uv-cache" | "$(Agent.OS)" | "$(python.version)" | uv.lock'
+      restoreKeys: |
+        "uv-cache" | "$(Agent.OS)" | "$(python.version)"
+        "uv-cache" | "$(Agent.OS)"
+      # Never restore the cache across-agents, some Unix directory paths won't be valid on Windows.
+      path: $(UV_CACHE_DIR)
+
+  - script: |
+      uv sync --locked
+    displayName: Install dependencies
+
+  - script: |
+      uv cache prune --ci
+    displayName: Optimise uv cache
+    # Optimize the cache for persistence in a continuous integration environment

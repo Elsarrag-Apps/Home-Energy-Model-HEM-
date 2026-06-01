@@ -1,0 +1,22 @@
+{
+    "HotWaterSource": {
+        "hw cylinder": {
+            "ColdWaterSource": "mains water",
+            "HeatSource": {
+                "immersion": {
+                    "Control": "hw timer",
+                    "EnergySupply": "mains elec",
+                    "heater_position": 0.1,
+                    "power": 3.0,
+                    "thermostat_position": 0.3333333333333333,
+                    "type": "ImmersionHeater"
+                }
+            },
+            "daily_losses": 1.4,
+            "min_temp": 52.0,
+            "setpoint_temp": 60.0,
+            "type": "StorageTank",
+            "volume": 210.0
+        }
+    }
+}

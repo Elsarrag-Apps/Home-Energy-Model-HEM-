@@ -1,0 +1,48 @@
+{
+        "window":{
+            "g_value":0.73,
+            "thermal_resistance_construction": 0.547
+            },
+        "wall":{
+            "solar_absorption_coeff": 0.6,
+            "thermal_resistance_construction": 5.56,
+            "areal_heat_capacity":114450,
+            "mass_distribution_class": "IE"
+            },
+        "party_wall":{
+            "thermal_resistance_construction": 5.56,
+            "areal_heat_capacity":114450,
+            "mass_distribution_class": "D"
+            },
+        "door":{
+            "solar_absorption_coeff": 0.65,
+            "thermal_resistance_construction": 0.43,
+            "areal_heat_capacity":39000,
+            "mass_distribution_class": "D"
+            },
+        "ground":{
+            "psi_wall_floor_junc":0.16,
+            "areal_heat_capacity": 282355,
+            "thermal_resistance_floor_construction": 6.12,
+            "mass_distribution_class": "E",
+            "u_value":0.13,
+            "floor_type": "Slab_no_edge_insulation"
+            },
+        "roof":{
+            "solar_absorption_coeff":0.60,
+            "thermal_resistance_construction": 9.091,
+            "areal_heat_capacity":8750,
+            "mass_distribution_class": "D",
+            "is_unheated_pitched_roof": true
+            },
+        "ThermalBridging": {
+                    "TB_linear": {
+                        "type": "ThermalBridgeLinear",
+                        "linear_thermal_transmittance": 0.05
+                    },
+                    "TB_point": {
+                        "type": "ThermalBridgePoint",
+                        "heat_transfer_coeff": 2.0
+                }
+        }
+    }

@@ -1,0 +1,22 @@
+
+{
+    "EnergySupply": {
+        "mains elec": {
+            "fuel": "electricity",
+            "threshold_charges": [0.8, 0.8, 0.7, 0.4, 0.0, 0.0, 0.0, 0.2, 0.5, 0.7, 0.8, 0.8],
+            "threshold_prices": [20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0],
+            "tariff": "Variable Time of Day Tariff",
+            "ElectricBattery": {
+                "capacity": 2,
+                "charge_discharge_efficiency_round_trip": 0.8,
+                "battery_age": 3,
+                "minimum_charge_rate_one_way_trip": 0.001,
+                "maximum_charge_rate_one_way_trip": 1.5,
+                "maximum_discharge_rate_one_way_trip": 1.25,
+                "battery_location": "inside",
+                "grid_charging_possible": true
+            },
+            "is_export_capable": true
+        }
+    }
+}

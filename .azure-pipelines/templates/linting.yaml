@@ -1,0 +1,17 @@
+# Run our pre-merge linting hooks (with pre-commit)
+---
+steps:
+  # Cache the pre-commit hooks to save time between pipeline runs where dependencies haven't changed.
+  - task: Cache@2
+    displayName: Setup pre-commit hooks cache
+    inputs:
+      key: '"pre-commit" | "$(Agent.OS)" | $(python --version) | .pre-commit-config.yaml'
+      restoreKeys: |
+        "pre-commit" | "$(Agent.OS)" | $(python --version)
+        "pre-commit" | "$(Agent.OS)"
+      # Never restore the cache across-agents, some Unix directory paths won't be valid on Windows.
+      path: $(PRE_COMMIT_HOME)
+
+  - script: |
+      uv run pre-commit run --all-files --hook-stage=pre-merge-commit
+    displayName: Linting (pre-merge hooks)

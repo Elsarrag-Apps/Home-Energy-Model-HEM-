@@ -1,0 +1,8 @@
+commit_id,test_suite_id,chronology,date,description
+7b619b5e,HEM_V024_FHS_V018,1,2023-12-13,HEM v0.24 FHS 0.18
+b01f46ac,HEM_V028_FHS_V019,2,2024-03-01,Last consultation version (HEM v0.28) Includes: WWHRS fix and PV solar fix
+9f6fb8fe,HEM_PRE_GR,3,2024-04-17,HEM version just before ground floor fixes
+9afba545,HEM_POST_GR,4,2024-05-08,Fix to heat loss through ground calculation + bundle of low priority features
+e18a1051,HEM_PRE_VENT,5,2024-05-17,HEM version just before the ventilation module is introduced
+16fda233,HEM_POST_VENT,6,2024-06-14,Post ventilation module
+334e5a38,HEM_DLUHC,7,2024-06-17,release version for testing HEM v0.30

@@ -1,0 +1,26 @@
+{
+    "HotWaterDemand":{
+        "Distribution": [
+            {
+                "location": "internal",
+                "internal_diameter_mm": 13,
+                "external_diameter_mm": 15,
+                "length": 10,
+                "insulation_thermal_conductivity": 0.035,
+                "insulation_thickness_mm": 38,
+                "surface_reflectivity": false,
+                "pipe_contents": "water"
+            },
+            {
+                "location": "external",
+                "internal_diameter_mm": 13,
+                "external_diameter_mm": 15,
+                "length": 10,
+                "insulation_thermal_conductivity": 0.035,
+                "insulation_thickness_mm": 38,
+                "surface_reflectivity": false,
+                "pipe_contents": "water"
+            }
+            ]
+    }
+}

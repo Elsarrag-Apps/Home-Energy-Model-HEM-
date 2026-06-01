@@ -1,0 +1,1 @@
+sensitivity_DE_01: Modified version of the detached house archetype from HEM consultation report HEM-VAL-01, for the purpose of phase 1 sensitivity tests with minor modifications to building components for ease of use. WARNING: edit made after 2024-05-22 are not inline with the archetype specifications for HEM-VAL-01.

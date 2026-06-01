@@ -1,0 +1,46 @@
+usage: hem-core [-h] [--epw-file EPW_FILE]
+                [--CIBSE-weather-file CIBSE_WEATHER_FILE]
+                [--tariff-file TARIFF_FILE] [--parallel PARALLEL]
+                [--output {json,csv} [{json,csv} ...]] [--heat-balance]
+                [--detailed-output-heating-cooling] [--no-fast-solver]
+                [--display-progress] [--permissive-json] [--fail-fast]
+                [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--version]
+                [input_file ...]
+
+Home Energy Model (HEM)
+
+positional arguments:
+  input_file            path(s) to file(s) containing building specifications
+                        to run
+
+options:
+  -h, --help            show this help message and exit
+  --epw-file EPW_FILE, -w EPW_FILE
+                        path to weather file in .epw format
+  --CIBSE-weather-file CIBSE_WEATHER_FILE
+                        path to CIBSE weather file in .csv format
+  --tariff-file TARIFF_FILE
+                        path to tariff data file in .csv format
+  --parallel PARALLEL, -p PARALLEL
+                        run calculations for different input files in
+                        parallel(specify no of files to run simultaneously)
+  --output {json,csv} [{json,csv} ...]
+                        output format(s): csv, json, or both; default to csv
+  --heat-balance        output heat balance for each zone
+  --detailed-output-heating-cooling
+                        output detailed calculation results for heating and
+                        cooling system objects (including HeatSourceWet
+                        objects) where the relevant objects have this
+                        functionality
+  --no-fast-solver      disable optimised solver (results may differ slightly
+                        due to reordering of floating-point ops); this option
+                        is provided to facilitate verification and debugging
+                        of the optimised version
+  --display-progress    display progress for the json input file currently
+                        running
+  --permissive-json     Allow extra fields in Pydantic models (useful during
+                        development)
+  --fail-fast           stop running as soon as an error is encountered
+  --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        set the logging level for the application
+  --version, -v         show the version

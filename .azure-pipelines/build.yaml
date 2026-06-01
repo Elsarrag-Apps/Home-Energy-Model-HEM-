@@ -1,0 +1,54 @@
+# Build the HEM Core python package, and publish it to the private Azure DevOps Artifact index.
+# This pipeline should only be run manually against a tagged version.
+---
+
+trigger: none  # Don't automatically trigger the build pipelines.
+
+variables:
+  - template: templates/environment_variables.yaml
+  - group: BuildPackage  # Contains the ARTIFACT_FEED_PUBLISH_URL
+
+jobs:
+  - job: Build
+    displayName: Build package
+    pool:
+      vmImage: 'ubuntu-24.04'
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.12'
+
+      - template: templates/install_dependencies.yaml
+
+      - template: templates/check_git_tag.yaml
+      # Requires uv before we can get the version.
+
+      - script: |
+          uv build
+        displayName: Build package
+
+      # Run the unit tests against the built package to confirm it works as expected.
+      - bash: |
+          uv venv .venv/
+          source .venv/bin/activate
+          uv pip install ../dist/hem_core-$(uv version --short)-py3-none-any.whl
+          uv sync --active --inexact --only-dev --no-install-project --locked --project ../
+          # Set the venv for the tests to run from
+          echo "##vso[task.setvariable variable=VIRTUAL_ENV;]$(parameter.venv)"
+        displayName: Run unit tests against the built package
+        # Work in the ./test/ directory, so that pytest can not pick up the source code.
+        workingDirectory: test
+
+      - template: templates/tests.yaml
+        parameters:
+          pytest_extra_args: "--no-docker-discovery"  # Prevents pytest-azurepipelines from uploading reports.
+          coverage: false
+          end_to_end: false
+          # Don't need to run the full end-to-end tests, we're just testing that the
+          # built package "works". We've already tested that the source code is "correct".
+
+      - script: |
+          uv publish --publish-url=$(ARTIFACT_FEED_PUBLISH_URL)
+        displayName: Publish package
+        env:
+          UV_PUBLISH_TOKEN: $(System.AccessToken)

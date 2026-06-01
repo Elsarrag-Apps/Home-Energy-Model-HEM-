@@ -1,0 +1,3952 @@
+{
+  "modules": {
+    "enums": {
+      "classes": {
+        "AirFlowType": {
+          "type": "Enum",
+          "members": {
+            "FAN_ASSISTED": "fan-assisted",
+            "DAMPER_ONLY": "damper-only"
+          }
+        },
+        "BatteryLocation": {
+          "type": "Enum",
+          "members": {
+            "INSIDE": "inside",
+            "OUTSIDE": "outside"
+          }
+        },
+        "BoilerHotWaterTest": {
+          "type": "Enum",
+          "members": {
+            "M_L": "M&L",
+            "M_S": "M&S",
+            "M_ONLY": "M_only",
+            "NO_ADDITIONAL_TESTS": "No_additional_tests"
+          }
+        },
+        "BuildType": {
+          "type": "Enum",
+          "members": {
+            "HOUSE": "house",
+            "FLAT": "flat"
+          }
+        },
+        "BuildingElementType": {
+          "type": "Enum",
+          "members": {
+            "OPAQUE": "BuildingElementOpaque",
+            "TRANSPARENT": "BuildingElementTransparent",
+            "GROUND": "BuildingElementGround",
+            "ADJACENT_CONDITIONED": "BuildingElementAdjacentConditionedSpace",
+            "ADJACENT_UNCONDITIONED_SPACE_SIMPLE": "BuildingElementAdjacentUnconditionedSpace_Simple",
+            "PARTY_WALL": "BuildingElementPartyWall"
+          }
+        },
+        "CombustionAirSupplySituation": {
+          "type": "Enum",
+          "members": {
+            "ROOM_AIR": "room_air",
+            "OUTSIDE": "outside"
+          }
+        },
+        "CombustionApplianceType": {
+          "type": "Enum",
+          "members": {
+            "OPEN_FIREPLACE": "open_fireplace",
+            "CLOSED_WITH_FAN": "closed_with_fan",
+            "OPEN_GAS_FLUE_BALANCER": "open_gas_flue_balancer",
+            "OPEN_GAS_KITCHEN_STOVE": "open_gas_kitchen_stove",
+            "OPEN_GAS_FIRE": "open_gas_fire",
+            "CLOSED_FIRE": "closed_fire"
+          }
+        },
+        "CombustionFuelType": {
+          "type": "Enum",
+          "members": {
+            "WOOD": "wood",
+            "GAS": "gas",
+            "OIL": "oil",
+            "COAL": "coal"
+          }
+        },
+        "ControlCombinationOperation": {
+          "type": "Enum",
+          "members": {
+            "AND_": "AND",
+            "OR_": "OR",
+            "XOR": "XOR",
+            "NOT_": "NOT",
+            "MAX": "MAX",
+            "MIN": "MIN",
+            "MEAN": "MEAN"
+          }
+        },
+        "ControlLogicType": {
+          "type": "Enum",
+          "members": {
+            "CELECT": "celect",
+            "HEAT_BATTERY": "heat_battery",
+            "HHRSH": "hhrsh",
+            "AUTOMATIC": "automatic",
+            "MANUAL": "manual"
+          }
+        },
+        "DaylightSavingsConfig": {
+          "type": "Enum",
+          "members": {
+            "APPLICABLE_AND_TAKEN_INTO_ACCOUNT": "applicable and taken into account",
+            "APPLICABLE_BUT_NOT_TAKEN_INTO_ACCOUNT": "applicable but not taken into account",
+            "NOT_APPLICABLE": "not applicable"
+          }
+        },
+        "DiverterHeatSourceType": {
+          "type": "Enum",
+          "members": {
+            "IMMERSION": "immersion"
+          }
+        },
+        "DuctShape": {
+          "type": "Enum",
+          "members": {
+            "CIRCULAR": "circular",
+            "RECTANGULAR": "rectangular"
+          }
+        },
+        "DuctType": {
+          "type": "Enum",
+          "members": {
+            "INTAKE": "intake",
+            "SUPPLY": "supply",
+            "EXTRACT": "extract",
+            "EXHAUST": "exhaust"
+          }
+        },
+        "EcoDesignControllerClass": {
+          "type": "Enum",
+          "members": {
+            "CLASS_I": 1,
+            "CLASS_II": 2,
+            "CLASS_III": 3,
+            "CLASS_IV": 4,
+            "CLASS_V": 5,
+            "CLASS_VI": 6,
+            "CLASS_VII": 7,
+            "CLASS_VIII": 8
+          }
+        },
+        "EdgeInsulationDirection": {
+          "type": "Enum",
+          "members": {
+            "HORIZONTAL": "horizontal",
+            "VERTICAL": "vertical"
+          }
+        },
+        "EnergySupplyPriorityEntry": {
+          "type": "Enum",
+          "members": {
+            "ELECTRIC_BATTERY": "ElectricBattery",
+            "DIVERTER": "diverter"
+          }
+        },
+        "EnergySupplyType": {
+          "type": "Enum",
+          "members": {
+            "MAINS_ELECTRIC": "mains elec",
+            "MAINS_GAS": "mains gas"
+          }
+        },
+        "FloorType": {
+          "type": "Enum",
+          "members": {
+            "SLAB_NO_EDGE_INSULATION": "Slab_no_edge_insulation",
+            "SLAB_EDGE_INSULATION": "Slab_edge_insulation",
+            "SUSPENDED_FLOOR": "Suspended_floor",
+            "HEATED_BASEMENT": "Heated_basement",
+            "UNHEATED_BASEMENT": "Unheated_basement"
+          }
+        },
+        "FlueGasExhaustSituation": {
+          "type": "Enum",
+          "members": {
+            "INTO_ROOM": "into_room",
+            "INTO_SEPARATE_DUCT": "into_separate_duct",
+            "INTO_MECH_VENT": "into_mech_vent"
+          }
+        },
+        "FuelType": {
+          "type": "Enum",
+          "members": {
+            "LPG_BOTTLED": "LPG_bottled",
+            "LPG_BULK": "LPG_bulk",
+            "LPG_CONDITION_11_F": "LPG_condition_11F",
+            "CUSTOM": "custom",
+            "ELECTRICITY": "electricity",
+            "ENERGY_FROM_ENVIRONMENT": "energy_from_environment",
+            "MAINS_GAS": "mains_gas",
+            "UNMET_DEMAND": "unmet_demand"
+          }
+        },
+        "HeatFlowDirection": {
+          "type": "Enum",
+          "members": {
+            "HORIZONTAL": "HORIZONTAL",
+            "UPWARDS": "UPWARDS",
+            "DOWNWARDS": "DOWNWARDS"
+          }
+        },
+        "HeatPumpBackupControlType": {
+          "type": "Enum",
+          "members": {
+            "NONE": "None",
+            "TOP_UP": "TopUp",
+            "SUBSTITUTE": "Substitute"
+          }
+        },
+        "HeatPumpSinkType": {
+          "type": "Enum",
+          "members": {
+            "WATER": "Water",
+            "AIR": "Air",
+            "GLYCOL25": "Glycol25"
+          }
+        },
+        "HeatPumpSourceType": {
+          "type": "Enum",
+          "members": {
+            "GROUND": "Ground",
+            "OUTSIDE_AIR": "OutsideAir",
+            "EXHAUST_AIR_MEV": "ExhaustAirMEV",
+            "EXHAUST_AIR_MVHR": "ExhaustAirMVHR",
+            "EXHAUST_AIR_MIXED": "ExhaustAirMixed",
+            "WATER_GROUND": "WaterGround",
+            "WATER_SURFACE": "WaterSurface",
+            "HEAT_NETWORK": "HeatNetwork"
+          }
+        },
+        "HeatSourceLocation": {
+          "type": "Enum",
+          "members": {
+            "INTERNAL": "internal",
+            "EXTERNAL": "external"
+          }
+        },
+        "HeatSourceWetType": {
+          "type": "Enum",
+          "members": {
+            "HEAT_PUMP": "HeatPump",
+            "BOILER": "Boiler",
+            "HEAT_BATTERY": "HeatBattery",
+            "HIU": "HIU"
+          }
+        },
+        "HeatingControlType": {
+          "type": "Enum",
+          "members": {
+            "SEPARATE_TIME_AND_TEMP_CONTROL": "SeparateTimeAndTempControl",
+            "SEPARATE_TEMP_CONTROL": "SeparateTempControl"
+          }
+        },
+        "HotWaterHeatSourceType": {
+          "type": "Enum",
+          "members": {
+            "IMMERSION_HEATER": "ImmersionHeater",
+            "SOLAR_THERMAL_SYSTEM": "SolarThermalSystem",
+            "HEAT_SOURCE_WET_SERVICE_WATER_REGULAR": "HeatSourceWet",
+            "HEAT_PUMP_HOT_WATER_ONLY": "HeatPump_HWOnly"
+          }
+        },
+        "HotWaterSourceType": {
+          "type": "Enum",
+          "members": {
+            "STORAGE_TANK": "StorageTank",
+            "COMBI_BOILER": "CombiBoiler",
+            "HIU": "HIU",
+            "POINT_OF_USE": "PointOfUse",
+            "SMART_HOT_WATER_TANK": "SmartHotWaterTank",
+            "HEAT_BATTERY": "HeatBattery"
+          }
+        },
+        "InverterType": {
+          "type": "Enum",
+          "members": {
+            "OPTIMISED_INVERTER": "optimised_inverter",
+            "STRING_INVERTER": "string_inverter"
+          }
+        },
+        "MVHRLocation": {
+          "type": "Enum",
+          "members": {
+            "INSIDE": "inside",
+            "OUTSIDE": "outside"
+          }
+        },
+        "MassDistributionClass": {
+          "type": "Enum",
+          "members": {
+            "D": "D",
+            "E": "E",
+            "I": "I",
+            "IE": "IE",
+            "M": "M"
+          }
+        },
+        "MechVentType": {
+          "type": "Enum",
+          "members": {
+            "INTERMITTENT_MEV": "Intermittent MEV",
+            "CENTRALISED_CONTINUOUS_MEV": "Centralised continuous MEV",
+            "DECENTRALISED_CONTINUOUS_MEV": "Decentralised continuous MEV",
+            "MVHR": "MVHR",
+            "POSITIVE_INPUT_VENTILATION": "Positive input ventilation"
+          }
+        },
+        "PartyWallCavityType": {
+          "type": "Enum",
+          "members": {
+            "SOLID": "solid",
+            "UNFILLED_UNSEALED": "unfilled_unsealed",
+            "UNFILLED_SEALED": "unfilled_sealed",
+            "FILLED_SEALED": "filled_sealed",
+            "FILLED_UNSEALED": "filled_unsealed",
+            "DEFINED_RESISTANCE": "defined_resistance"
+          }
+        },
+        "PartyWallLiningType": {
+          "type": "Enum",
+          "members": {
+            "WET_PLASTER": "wet_plaster",
+            "DRY_LINED": "dry_lined"
+          }
+        },
+        "PhotovoltaicVentilationStrategy": {
+          "type": "Enum",
+          "members": {
+            "UNVENTILATED": "unventilated",
+            "MODERATELY_VENTILATED": "moderately_ventilated",
+            "STRONGLY_OR_FORCED_VENTILATED": "strongly_or_forced_ventilated",
+            "REAR_SURFACE_FREE": "rear_surface_free"
+          }
+        },
+        "PipeworkContents": {
+          "type": "Enum",
+          "members": {
+            "WATER": "water",
+            "GLYCOL25": "glycol25"
+          }
+        },
+        "ShadingObjectType": {
+          "type": "Enum",
+          "members": {
+            "OBSTACLE": "obstacle",
+            "OVERHANG": "overhang"
+          }
+        },
+        "ShowerType": {
+          "type": "Enum",
+          "members": {
+            "MIXER_SHOWER": "MixerShower",
+            "INSTANT_ELECTRIC_SHOWER": "InstantElecShower"
+          }
+        },
+        "SolarCollectorLoopLocation": {
+          "type": "Enum",
+          "members": {
+            "OUT": "OUT",
+            "HS": "HS",
+            "NHS": "NHS"
+          }
+        },
+        "SpaceCoolSystemType": {
+          "type": "Enum",
+          "members": {
+            "AIR_CONDITIONING": "AirConditioning"
+          }
+        },
+        "SpaceHeatControlType": {
+          "type": "Enum",
+          "members": {
+            "LIVINGROOM": "livingroom",
+            "RESTOFDWELLING": "restofdwelling"
+          }
+        },
+        "SupplyAirFlowRateControlType": {
+          "type": "Enum",
+          "members": {
+            "ODA": "ODA"
+          }
+        },
+        "SupplyAirTemperatureControlType": {
+          "type": "Enum",
+          "members": {
+            "NO_CTRL": "NO_CTRL"
+          }
+        },
+        "TerrainClass": {
+          "type": "Enum",
+          "members": {
+            "OPEN_WATER": "OpenWater",
+            "OPEN_FIELD": "OpenField",
+            "SUBURBAN": "Suburban",
+            "URBAN": "Urban"
+          }
+        },
+        "TestLetter": {
+          "type": "Enum",
+          "members": {
+            "A": "A",
+            "B": "B",
+            "C": "C",
+            "D": "D",
+            "F": "F"
+          }
+        },
+        "ThermalBridgingType": {
+          "type": "Enum",
+          "members": {
+            "LINEAR": "ThermalBridgeLinear",
+            "POINT": "ThermalBridgePoint"
+          }
+        },
+        "TimeControlType": {
+          "type": "Enum",
+          "members": {
+            "ON_OFF_TIME": "OnOffTimeControl",
+            "SETPOINT_TIME": "SetpointTimeControl",
+            "CHARGE": "ChargeControl",
+            "ON_OFF_COST_MINIMISING": "OnOffCostMinimisingTimeControl",
+            "COMBINATION": "CombinationTimeControl"
+          }
+        },
+        "VentilationShieldClass": {
+          "type": "Enum",
+          "members": {
+            "OPEN": "Open",
+            "NORMAL": "Normal",
+            "SHIELDED": "Shielded"
+          }
+        },
+        "WWHRSConfiguration": {
+          "type": "Enum",
+          "members": {
+            "SHOWER_AND_WATER_HEATING_SYSTEM": "A",
+            "SHOWER": "B",
+            "WATER_HEATING_SYSTEM": "C"
+          }
+        },
+        "WasteWaterHeatRecoverySystemType": {
+          "type": "Enum",
+          "members": {
+            "INSTANTANEOUS_SYSTEM_A": "WWHRS_InstantaneousSystemA",
+            "INSTANTANEOUS_SYSTEM_B": "WWHRS_InstantaneousSystemB",
+            "INSTANTANEOUS_SYSTEM_C": "WWHRS_InstantaneousSystemC"
+          }
+        },
+        "WaterHeatingSchedule": {
+          "type": "Enum",
+          "members": {
+            "ALL_DAY": "AllDay",
+            "HEATING_HOURS": "HeatingHours"
+          }
+        },
+        "WaterPipeworkLocation": {
+          "type": "Enum",
+          "members": {
+            "INTERNAL": "internal",
+            "EXTERNAL": "external"
+          }
+        },
+        "WetEmitterType": {
+          "type": "Enum",
+          "members": {
+            "RADIATOR": "radiator",
+            "UFH": "ufh",
+            "FANCOIL": "fancoil"
+          }
+        },
+        "WindShieldLocation": {
+          "type": "Enum",
+          "members": {
+            "SHELTERED": "Sheltered",
+            "AVERAGE": "Average",
+            "EXPOSED": "Exposed"
+          }
+        },
+        "WindowShadingType": {
+          "type": "Enum",
+          "members": {
+            "OVERHANG": "overhang",
+            "SIDEFINRIGHT": "sidefinright",
+            "SIDEFINLEFT": "sidefinleft",
+            "REVEAL": "reveal"
+          }
+        },
+        "WindowTreatmentControl": {
+          "type": "Enum",
+          "members": {
+            "AUTO_MOTORISED": "auto_motorised",
+            "COMBINED_LIGHT_BLIND_HVAC": "combined_light_blind_HVAC",
+            "MANUAL": "manual",
+            "MANUAL_MOTORISED": "manual_motorised"
+          }
+        },
+        "WindowTreatmentType": {
+          "type": "Enum",
+          "members": {
+            "BLINDS": "blinds",
+            "CURTAINS": "curtains"
+          }
+        },
+        "ZoneTemperatureControlBasis": {
+          "type": "Enum",
+          "members": {
+            "AIR": "air",
+            "OPERATIVE": "operative"
+          }
+        }
+      },
+      "functions": {}
+    },
+    "external_conditions": {
+      "classes": {
+        "ExternalConditions": {
+          "init": {
+            "parameters": [
+              "simulation_time: hem_core.simulation_time.SimulationTime",
+              "air_temps: list[float]",
+              "wind_speeds: list[float]",
+              "wind_directions: list[hem_core.units.Orientation360]",
+              "diffuse_horizontal_radiation: list[float]",
+              "direct_beam_radiation: list[float]",
+              "solar_reflectivity_of_ground: list[float]",
+              "latitude: float",
+              "longitude: float",
+              "timezone: int",
+              "start_day: int",
+              "end_day: int",
+              "time_series_step: float",
+              "january_first: int | None",
+              "daylight_savings: str | None",
+              "leap_day_included: bool | None",
+              "direct_beam_conversion_needed: bool",
+              "shading_segments: list[dict[str, typing.Any]] | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "a_over_b": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "float"
+            },
+            "air_temp": {
+              "parameters": [
+                "self",
+                "idx_offset: int = 0"
+              ],
+              "return": "float"
+            },
+            "air_temp_annual": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "air_temp_annual_daily_average_min": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "air_temp_monthly": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "brightness_coefficient": {
+              "parameters": [
+                "self",
+                "clearness_parameter: float",
+                "brightness_coefficient: str"
+              ],
+              "return": "float"
+            },
+            "calculated_diffuse_irradiance": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "float"
+            },
+            "calculated_direct_diffuse_total_irradiance": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360",
+                "diffuse_breakdown: bool = False"
+              ],
+              "return": "tuple[float, float, float, dict[str, float] | None]"
+            },
+            "calculated_direct_irradiance": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "float"
+            },
+            "calculated_total_solar_irradiance": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "float"
+            },
+            "circumsolar_irradiance": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "float"
+            },
+            "diffuse_horizontal_radiation": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "diffuse_irradiance": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "tuple[float, float, float, float]"
+            },
+            "diffuse_shading_reduction_factor": {
+              "parameters": [
+                "self",
+                "diffuse_breakdown: dict[str, typing.Any]",
+                "tilt: float",
+                "height: float",
+                "base_height: float",
+                "width: float",
+                "orientation: hem_core.units.Orientation360",
+                "window_shading: list[dict[str, typing.Any]]",
+                "f_sky: float"
+              ],
+              "return": "float"
+            },
+            "direct_beam_radiation": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "direct_irradiance": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "float"
+            },
+            "direct_shading_reduction_factor": {
+              "parameters": [
+                "self",
+                "base_height: float",
+                "height: float",
+                "width: float",
+                "orientation: hem_core.units.Orientation360",
+                "window_shading: list[dict[str, typing.Any]]"
+              ],
+              "return": "float"
+            },
+            "get_segment": {
+              "parameters": [
+                "self"
+              ],
+              "return": "dict[str, typing.Any]"
+            },
+            "ground_reflection_irradiance": {
+              "parameters": [
+                "self",
+                "tilt: float"
+              ],
+              "return": "float"
+            },
+            "obstacle_shading_height": {
+              "parameters": [
+                "self",
+                "base_height: float",
+                "shading_obstacle_height: float",
+                "surface_obstacle_distance: float"
+              ],
+              "return": "float"
+            },
+            "outside_solar_beam": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "bool"
+            },
+            "overhang_shading_height": {
+              "parameters": [
+                "self",
+                "shaded_surface_height: float",
+                "base_height: float",
+                "overhang_lowest_height: float",
+                "surface_overhang_distance: float"
+              ],
+              "return": "float"
+            },
+            "shading_reduction_factor_direct_diffuse": {
+              "parameters": [
+                "self",
+                "base_height: float",
+                "height: float",
+                "width: float",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360",
+                "window_shading: list[dict[str, typing.Any]]"
+              ],
+              "return": "tuple[float, float]"
+            },
+            "solar_angle_of_incidence": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "float"
+            },
+            "solar_reflectivity_of_ground": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "sun_above_horizon": {
+              "parameters": [
+                "self"
+              ],
+              "return": "bool"
+            },
+            "sun_surface_azimuth": {
+              "parameters": [
+                "self",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "float"
+            },
+            "sun_surface_tilt": {
+              "parameters": [
+                "self",
+                "tilt: float"
+              ],
+              "return": "float"
+            },
+            "surface_irradiance": {
+              "parameters": [
+                "self",
+                "base_height: float",
+                "projected_height: float",
+                "width: float",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360",
+                "window_shading: list[dict[str, typing.Any]]"
+              ],
+              "return": "float"
+            },
+            "testoutput": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: hem_core.units.Orientation360"
+              ],
+              "return": "None"
+            },
+            "testoutput_setup": {
+              "parameters": [
+                "self",
+                "tilt: float",
+                "orientation: float"
+              ],
+              "return": "None"
+            },
+            "wind_direction": {
+              "parameters": [
+                "self"
+              ],
+              "return": "hem_core.units.Orientation360"
+            },
+            "wind_direction_annual": {
+              "parameters": [
+                "self"
+              ],
+              "return": "hem_core.units.Orientation360"
+            },
+            "wind_speed": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "wind_speed_annual": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            }
+          }
+        }
+      },
+      "functions": {
+        "create_external_conditions": {
+          "parameters": [
+            "external_conditions: dict",
+            "simtime: hem_core.simulation_time.SimulationTime"
+          ],
+          "return": "hem_core.external_conditions.ExternalConditions"
+        },
+        "sky_view_factor": {
+          "parameters": [
+            "pitch: float"
+          ],
+          "return": "float"
+        }
+      }
+    },
+    "input": {
+      "classes": {
+        "AirTerminalDevice": {
+          "init": {
+            "parameters": [
+              "*",
+              "area_cm2: Annotated[float, Gt(gt=0)]",
+              "pressure_difference_ref: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ApplianceGains": {
+          "init": {
+            "parameters": [
+              "*",
+              "start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "time_series_step: Annotated[float, Gt(gt=0), Le(le=24)]",
+              "Events: list[hem_core.input_output.input.ApplianceGainsEvent] | None = None",
+              "Standby: Annotated[float | None, Ge(ge=0)] = None",
+              "EnergySupply: str",
+              "gains_fraction: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "loadshifting: hem_core.input_output.input.ApplianceLoadShifting | None = None",
+              "priority: int | None = None",
+              "schedule: hem_core.input_output.input.ScheduleForDouble | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ApplianceGainsEvent": {
+          "init": {
+            "parameters": [
+              "*",
+              "demand_W: Annotated[float, Gt(gt=0)]",
+              "duration: Annotated[float, Gt(gt=0)]",
+              "start: Annotated[float, Ge(ge=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ApplianceLoadShifting": {
+          "init": {
+            "parameters": [
+              "*",
+              "Control: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "demand_limit_weighted: Annotated[float, Ge(ge=0)]",
+              "max_shift_hrs: Annotated[float, Ge(ge=0), Le(le=24)]",
+              "priority: int | None = None",
+              "weight_timeseries: list[float]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "Bath": {
+          "init": {
+            "parameters": [
+              "*",
+              "ColdWaterSource: str",
+              "HotWaterSource: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='HotWaterSource', alias_priority=2, description='References a key (e.g., \"hw cylinder\") in $.HotWaterSource', json_schema_extra={'reference_to': '$.hot_water_source'})]] = None",
+              "flowrate: Annotated[float, Gt(gt=0)]",
+              "size: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "BoilerBase": {
+          "init": {
+            "parameters": [
+              "*",
+              "EnergySupply: str",
+              "EnergySupply_aux: str",
+              "boiler_location: hem_core.input_output.enums.HeatSourceLocation",
+              "efficiency_full_load: Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]",
+              "efficiency_part_load: Annotated[float, Gt(gt=0), Le(le=1.12)]",
+              "electricity_circ_pump: Annotated[float, Ge(ge=0)]",
+              "electricity_full_load: Annotated[float, Ge(ge=0)]",
+              "electricity_part_load: Annotated[float, Ge(ge=0)]",
+              "electricity_standby: Annotated[float, Ge(ge=0)]",
+              "modulation_load: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "rated_power: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "BoilerCostScheduleHybrid": {
+          "init": {
+            "parameters": [
+              "*",
+              "cost_schedule_boiler: hem_core.input_output.input.ScheduleForDouble",
+              "cost_schedule_hp: hem_core.input_output.input.ScheduleForDouble",
+              "cost_schedule_start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "cost_schedule_time_series_step: float"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "BuildingElementAdjacentConditionedSpace": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "thermal_resistance_construction: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "type: Literal[<BuildingElementType.ADJACENT_CONDITIONED: 'BuildingElementAdjacentConditionedSpace'>]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_thermal_properties": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementAdjacentUnconditionedSpaceSimple": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "thermal_resistance_construction: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "type: Literal[<BuildingElementType.ADJACENT_UNCONDITIONED_SPACE_SIMPLE: 'BuildingElementAdjacentUnconditionedSpace_Simple'>]",
+              "thermal_resistance_unconditioned_space: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_thermal_properties": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementCommonBase": {
+          "init": {
+            "parameters": [
+              "*",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Optional[Annotated[float, Gt(gt=0)]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "BuildingElementCommonBaseNotGround": {
+          "init": {
+            "parameters": [
+              "*",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "thermal_resistance_construction: Optional[Annotated[float, Gt(gt=0)]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_thermal_properties": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementExposedToSolarRadiation": {
+          "init": {
+            "parameters": [
+              "*",
+              "orientation360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "base_height: Annotated[float, Ge(ge=0)]",
+              "height: Annotated[float, Gt(gt=0)]",
+              "width: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "BuildingElementGroundBase": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Annotated[float, Gt(gt=0)]",
+              "type: Literal['BuildingElementGround']",
+              "thermal_resistance_floor_construction: Annotated[float, Gt(gt=0)]",
+              "total_area: Annotated[float, Gt(gt=0)]",
+              "perimeter: Annotated[float, Gt(gt=0)]",
+              "psi_wall_floor_junc: float",
+              "thickness_walls: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_u_value_and_thermal_resistance_floor_construction": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementGroundHeatedBasement": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Annotated[float, Gt(gt=0)]",
+              "type: Literal['BuildingElementGround']",
+              "thermal_resistance_floor_construction: Annotated[float, Gt(gt=0)]",
+              "total_area: Annotated[float, Gt(gt=0)]",
+              "perimeter: Annotated[float, Gt(gt=0)]",
+              "psi_wall_floor_junc: float",
+              "thickness_walls: Annotated[float, Gt(gt=0)]",
+              "floor_type: Literal[<FloorType.HEATED_BASEMENT: 'Heated_basement'>]",
+              "depth_basement_floor: Annotated[float, Gt(gt=0)]",
+              "thermal_resist_walls_base: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_u_value_and_thermal_resistance_floor_construction": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementGroundSlabEdgeInsulation": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Annotated[float, Gt(gt=0)]",
+              "type: Literal['BuildingElementGround']",
+              "thermal_resistance_floor_construction: Annotated[float, Gt(gt=0)]",
+              "total_area: Annotated[float, Gt(gt=0)]",
+              "perimeter: Annotated[float, Gt(gt=0)]",
+              "psi_wall_floor_junc: float",
+              "thickness_walls: Annotated[float, Gt(gt=0)]",
+              "floor_type: Literal[<FloorType.SLAB_EDGE_INSULATION: 'Slab_edge_insulation'>]",
+              "edge_insulation: list[typing.Annotated[hem_core.input_output.input.EdgeInsulationHorizontal | hem_core.input_output.input.EdgeInsulationVertical, FieldInfo(annotation=NoneType, required=True, discriminator='type')]] | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_u_value_and_thermal_resistance_floor_construction": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementGroundSlabNoEdgeInsulation": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Annotated[float, Gt(gt=0)]",
+              "type: Literal['BuildingElementGround']",
+              "thermal_resistance_floor_construction: Annotated[float, Gt(gt=0)]",
+              "total_area: Annotated[float, Gt(gt=0)]",
+              "perimeter: Annotated[float, Gt(gt=0)]",
+              "psi_wall_floor_junc: float",
+              "thickness_walls: Annotated[float, Gt(gt=0)]",
+              "floor_type: Literal[<FloorType.SLAB_NO_EDGE_INSULATION: 'Slab_no_edge_insulation'>]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_u_value_and_thermal_resistance_floor_construction": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementGroundSuspendedFloor": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Annotated[float, Gt(gt=0)]",
+              "type: Literal['BuildingElementGround']",
+              "thermal_resistance_floor_construction: Annotated[float, Gt(gt=0)]",
+              "total_area: Annotated[float, Gt(gt=0)]",
+              "perimeter: Annotated[float, Gt(gt=0)]",
+              "psi_wall_floor_junc: float",
+              "thickness_walls: Annotated[float, Gt(gt=0)]",
+              "floor_type: Literal[<FloorType.SUSPENDED_FLOOR: 'Suspended_floor'>]",
+              "area_per_perimeter_vent: Annotated[float, Gt(gt=0)]",
+              "thermal_resist_insul: Annotated[float, Gt(gt=0)]",
+              "thermal_transm_walls: Annotated[float, Gt(gt=0)]",
+              "height_upper_surface: Annotated[float, Gt(gt=0)]",
+              "shield_fact_location: hem_core.input_output.enums.WindShieldLocation"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_u_value_and_thermal_resistance_floor_construction": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementGroundUnheatedBasement": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Annotated[float, Gt(gt=0)]",
+              "type: Literal['BuildingElementGround']",
+              "thermal_resistance_floor_construction: Annotated[float, Gt(gt=0)]",
+              "total_area: Annotated[float, Gt(gt=0)]",
+              "perimeter: Annotated[float, Gt(gt=0)]",
+              "psi_wall_floor_junc: float",
+              "thickness_walls: Annotated[float, Gt(gt=0)]",
+              "floor_type: Literal[<FloorType.UNHEATED_BASEMENT: 'Unheated_basement'>]",
+              "depth_basement_floor: Annotated[float, Gt(gt=0)]",
+              "height_basement_walls: Annotated[float, Gt(gt=0)]",
+              "thermal_resist_walls_base: Annotated[float, Gt(gt=0)]",
+              "thermal_transm_envi_base: Annotated[float, Gt(gt=0)]",
+              "thermal_transm_walls: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_u_value_and_thermal_resistance_floor_construction": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementNotTransparent": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "BuildingElementOpaque": {
+          "init": {
+            "parameters": [
+              "*",
+              "orientation360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "base_height: Annotated[float, Ge(ge=0)]",
+              "height: Annotated[float, Gt(gt=0)]",
+              "width: Annotated[float, Gt(gt=0)]",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "thermal_resistance_construction: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "type: Literal[<BuildingElementType.OPAQUE: 'BuildingElementOpaque'>]",
+              "is_unheated_pitched_roof: bool | None = None",
+              "solar_absorption_coeff: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_thermal_properties": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "BuildingElementPartyWall": {
+          "init": {
+            "parameters": [
+              "*",
+              "area: Annotated[float, Gt(gt=0)]",
+              "areal_heat_capacity: Annotated[float, Gt(gt=0)]",
+              "mass_distribution_class: hem_core.input_output.enums.MassDistributionClass",
+              "pitch: Annotated[float, Ge(ge=60.0), Le(le=120.0)]",
+              "u_value: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "thermal_resistance_construction: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "type: Literal[<BuildingElementType.PARTY_WALL: 'BuildingElementPartyWall'>]",
+              "party_wall_cavity_type: hem_core.input_output.enums.PartyWallCavityType",
+              "thermal_resistance_cavity: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "party_wall_lining_type: hem_core.input_output.enums.PartyWallLiningType | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_party_wall_lining_type": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            },
+            "validate_thermal_properties": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            },
+            "validate_thermal_resistance_cavity": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "BuildingElementTransparent": {
+          "init": {
+            "parameters": [
+              "*",
+              "orientation360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "base_height: Annotated[float, Ge(ge=0)]",
+              "height: Annotated[float, Gt(gt=0)]",
+              "width: Annotated[float, Gt(gt=0)]",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "u_value: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "thermal_resistance_construction: Optional[Annotated[float, Gt(gt=0)]] = None",
+              "type: Literal[<BuildingElementType.TRANSPARENT: 'BuildingElementTransparent'>]",
+              "Control_WindowOpenable: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "frame_area_fraction: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "free_area_height: Annotated[float, Ge(ge=0)]",
+              "g_value: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "max_window_open_area: Annotated[float, Ge(ge=0)]",
+              "mid_height: Annotated[float, Gt(gt=0)]",
+              "shading: list[hem_core.input_output.input.WindowShadingObject | hem_core.input_output.input.WindowShadingObstacle]",
+              "treatment: list[hem_core.input_output.input.WindowTreatment] | None = None",
+              "window_part_list: list[hem_core.input_output.input.WindowPart]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_max_window_open_area": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            },
+            "validate_thermal_properties": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "ChargeLevel": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ColdWaterSource": {
+          "init": {
+            "parameters": [
+              "*",
+              "start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "time_series_step: Annotated[float, Gt(gt=0), Le(le=24)]",
+              "temperatures: list[typing.Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Running water temperature 0-100 (unit: ˚C)', metadata=[Ge(ge=0), Le(le=100)])]]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ControlChargeTarget": {
+          "init": {
+            "parameters": [
+              "*",
+              "start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "time_series_step: Annotated[float, Gt(gt=0), Le(le=24)]",
+              "type: Literal[<TimeControlType.CHARGE: 'ChargeControl'>]",
+              "charge_level: hem_core.input_output.input.ChargeLevel | None = None",
+              "external_sensor: hem_core.input_output.input.ExternalSensor | None = None",
+              "logic_type: hem_core.input_output.enums.ControlLogicType | None = None",
+              "schedule: hem_core.input_output.input.ScheduleForBoolean",
+              "temp_charge_cut: Optional[Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Temperature measurement in degrees Celsius (unit: ˚C)', metadata=[Ge(ge=-273.15)])]] = None",
+              "temp_charge_cut_delta: hem_core.input_output.input.ScheduleForDegreesCelsius | None = None",
+              "charge_calc_time: Annotated[float, Ge(ge=0), Lt(lt=24)] = 21"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_logic_type": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "ControlCombination": {
+          "init": {
+            "parameters": [
+              "*",
+              "controls: Annotated[list[str], MinLen(min_length=1)]",
+              "operation: hem_core.input_output.enums.ControlCombinationOperation"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ControlCombinationTime": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<TimeControlType.COMBINATION: 'CombinationTimeControl'>]",
+              "combination: hem_core.input_output.input.ControlCombinations"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ControlCombinations": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_main_exists": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "ControlOnOffCostMinimising": {
+          "init": {
+            "parameters": [
+              "*",
+              "start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "time_series_step: Annotated[float, Gt(gt=0), Le(le=24)]",
+              "type: Literal[<TimeControlType.ON_OFF_COST_MINIMISING: 'OnOffCostMinimisingTimeControl'>]",
+              "schedule: hem_core.input_output.input.ScheduleForDouble",
+              "time_on_daily: Annotated[float, Gt(gt=0), Le(le=24)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ControlOnOffTimer": {
+          "init": {
+            "parameters": [
+              "*",
+              "start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "time_series_step: Annotated[float, Gt(gt=0), Le(le=24)]",
+              "type: Literal[<TimeControlType.ON_OFF_TIME: 'OnOffTimeControl'>]",
+              "allow_null: bool | None = None",
+              "schedule: hem_core.input_output.input.ScheduleForBoolean"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ControlSetpointTimer": {
+          "init": {
+            "parameters": [
+              "*",
+              "start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "time_series_step: Annotated[float, Gt(gt=0), Le(le=24)]",
+              "type: Literal[<TimeControlType.SETPOINT_TIME: 'SetpointTimeControl'>]",
+              "advanced_start: Annotated[float | None, Ge(ge=0)] = None",
+              "default_to_max: bool | None = None",
+              "schedule: hem_core.input_output.input.ScheduleForDouble",
+              "setpoint_max: float | None = None",
+              "setpoint_min: float | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_setpoint_bounds": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "EcoDesignController": {
+          "init": {
+            "parameters": [
+              "*",
+              "ecodesign_control_class: hem_core.input_output.enums.EcoDesignControllerClass",
+              "max_outdoor_temp: Optional[Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Temperature measurement in degrees Celsius (unit: ˚C)', metadata=[Ge(ge=-273.15)])]] = None",
+              "min_flow_temp: Annotated[float | None, Gt(gt=0)] = None",
+              "min_outdoor_temp: Optional[Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Temperature measurement in degrees Celsius (unit: ˚C)', metadata=[Ge(ge=-273.15)])]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "EdgeInsulationHorizontal": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<EdgeInsulationDirection.HORIZONTAL: 'horizontal'>]",
+              "edge_thermal_resistance: Annotated[float, Gt(gt=0)]",
+              "width: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "EdgeInsulationVertical": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<EdgeInsulationDirection.VERTICAL: 'vertical'>]",
+              "edge_thermal_resistance: Annotated[float, Gt(gt=0)]",
+              "depth: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ElectricBattery": {
+          "init": {
+            "parameters": [
+              "*",
+              "battery_age: Annotated[float, Ge(ge=0)]",
+              "battery_location: hem_core.input_output.enums.BatteryLocation",
+              "capacity: Annotated[float, Gt(gt=0)]",
+              "charge_discharge_efficiency_round_trip: Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]",
+              "grid_charging_possible: bool",
+              "maximum_charge_rate_one_way_trip: Annotated[float, Gt(gt=0)]",
+              "maximum_discharge_rate_one_way_trip: Annotated[float, Gt(gt=0)]",
+              "minimum_charge_rate_one_way_trip: Annotated[float, Ge(ge=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "EnergyDiverter": {
+          "init": {
+            "parameters": [
+              "*",
+              "Controlmax: str",
+              "HeatSource: str"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "EnergySupply": {
+          "init": {
+            "parameters": [
+              "*",
+              "ElectricBattery: hem_core.input_output.input.ElectricBattery | None = None",
+              "diverter: hem_core.input_output.input.EnergyDiverter | None = None",
+              "fuel: hem_core.input_output.enums.FuelType",
+              "is_export_capable: bool",
+              "priority: list[hem_core.input_output.enums.EnergySupplyPriorityEntry] | None = None",
+              "tariff: str | None = None",
+              "threshold_charges: Optional[Annotated[list[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]], FieldInfo(annotation=NoneType, required=True, description='Level of battery charge above which grid prohibited from charging battery (monthly values) (0 - 1)', metadata=[MinLen(min_length=12), MaxLen(max_length=12)])]] = None",
+              "threshold_prices: Optional[Annotated[list[float], FieldInfo(annotation=NoneType, required=True, description='Grid price below which battery is permitted to charge from grid (monthly values) (unit: p/kWh)', metadata=[MinLen(min_length=12), MaxLen(max_length=12)])]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ExternalConditionsInput": {
+          "init": {
+            "parameters": [
+              "*",
+              "air_temperatures: list[typing.Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Temperature measurement in degrees Celsius (unit: ˚C)', metadata=[Ge(ge=-273.15)])]] | None = None",
+              "diffuse_horizontal_radiation: list[typing.Annotated[float, Ge(ge=0)]] | None = None",
+              "direct_beam_conversion_needed: bool | None = None",
+              "direct_beam_radiation: list[typing.Annotated[float, Ge(ge=0)]] | None = None",
+              "latitude: Annotated[float | None, Ge(ge=-90), Le(le=90)] = None",
+              "longitude: Annotated[float | None, Ge(ge=-180), Le(le=180)] = None",
+              "shading_segments: list[hem_core.input_output.input.ShadingSegment] | None = None",
+              "solar_reflectivity_of_ground: list[typing.Annotated[float, Interval(gt=None, ge=0, lt=None, le=1), FieldInfo(annotation=NoneType, required=True, description='The fraction of solar radiation incident on the ground that is reflected. Also called the albedo.')]] | None = None",
+              "wind_directions: list[typing.Annotated[float, Interval(gt=None, ge=0, lt=None, le=360), FieldInfo(annotation=NoneType, required=True, description='The orientation angle of the inclined surface, expressed as the geographical azimuth angle of the horizontal projection of the inclined surface normal, 0 to 360 (unit: ˚)')]] | None = None",
+              "wind_speeds: list[typing.Annotated[float, Ge(ge=0)]] | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "are_all_fields_set": {
+              "parameters": [
+                "self"
+              ],
+              "return": "bool"
+            }
+          }
+        },
+        "ExternalSensor": {
+          "init": {
+            "parameters": [
+              "*",
+              "correlation: list[hem_core.input_output.input.ExternalSensorCorrelation]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ExternalSensorCorrelation": {
+          "init": {
+            "parameters": [
+              "*",
+              "temperature: Annotated[float, Ge(ge=-273.15)]",
+              "max_charge: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "FanSpeedData": {
+          "init": {
+            "parameters": [
+              "*",
+              "power_output: list[typing.Annotated[float, Ge(ge=0)]]",
+              "temperature_diff: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "FancoilTestData": {
+          "init": {
+            "parameters": [
+              "*",
+              "fan_power_W: list[typing.Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Gt(gt=0)])]]",
+              "fan_speed_data: list[hem_core.input_output.input.FanSpeedData]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_lists_length": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "HeatPumpBoiler": {
+          "init": {
+            "parameters": [
+              "*",
+              "EnergySupply: str",
+              "EnergySupply_aux: str",
+              "boiler_location: hem_core.input_output.enums.HeatSourceLocation",
+              "efficiency_full_load: Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]",
+              "efficiency_part_load: Annotated[float, Gt(gt=0), Le(le=1.12)]",
+              "electricity_circ_pump: Annotated[float, Ge(ge=0)]",
+              "electricity_full_load: Annotated[float, Ge(ge=0)]",
+              "electricity_part_load: Annotated[float, Ge(ge=0)]",
+              "electricity_standby: Annotated[float, Ge(ge=0)]",
+              "modulation_load: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "rated_power: Annotated[float, Gt(gt=0)]",
+              "cost_schedule_hybrid: hem_core.input_output.input.BoilerCostScheduleHybrid | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatPumpBufferTank": {
+          "init": {
+            "parameters": [
+              "*",
+              "daily_losses: Annotated[float, Gt(gt=0)]",
+              "pump_fixed_flow_rate: Annotated[float, Gt(gt=0)]",
+              "pump_power_at_flow_rate: Annotated[float, Gt(gt=0)]",
+              "volume: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatPumpHotWaterOnly": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterHeatSourceType.HEAT_PUMP_HOT_WATER_ONLY: 'HeatPump_HWOnly'>]",
+              "Controlmax: str",
+              "Controlmin: str",
+              "EnergySupply: str",
+              "daily_losses_declared: Annotated[float, Gt(gt=0)]",
+              "heat_exchanger_surface_area_declared: Annotated[float | None, Gt(gt=0)]",
+              "heater_position: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "in_use_factor_mismatch: Annotated[float, Gt(gt=0)]",
+              "power_max: Annotated[float, Gt(gt=0)]",
+              "tank_volume_declared: Annotated[float, Gt(gt=0)]",
+              "test_data: hem_core.input_output.input.HeatPumpHotWaterTestData",
+              "thermostat_position: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None",
+              "vol_hw_daily_average: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatPumpHotWaterOnlyTestDatum": {
+          "init": {
+            "parameters": [
+              "*",
+              "cop_dhw: Annotated[float, Gt(gt=0)]",
+              "energy_input_measured: Annotated[float, Gt(gt=0)]",
+              "hw_tapping_prof_daily_total: Annotated[float, Gt(gt=0)]",
+              "hw_vessel_loss_daily: Annotated[float, Gt(gt=0)]",
+              "power_standby: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatPumpHotWaterTestData": {
+          "init": {
+            "parameters": [
+              "*",
+              "L: hem_core.input_output.input.HeatPumpHotWaterOnlyTestDatum | None = None",
+              "M: hem_core.input_output.input.HeatPumpHotWaterOnlyTestDatum"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatPumpTestDatum": {
+          "init": {
+            "parameters": [
+              "*",
+              "air_flow_rate: Annotated[float | None, Gt(gt=0)] = None",
+              "capacity: Annotated[float, Gt(gt=0)]",
+              "cop: Annotated[float, Gt(gt=0)]",
+              "design_flow_temp: Annotated[float, Gt(gt=0)]",
+              "eahp_mixed_ext_air_ratio: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None",
+              "temp_outlet: Annotated[float, Gt(gt=0)]",
+              "temp_source: Annotated[float, Ge(ge=-273.15)]",
+              "temp_test: Annotated[float, Ge(ge=-273.15)]",
+              "test_letter: hem_core.input_output.enums.TestLetter"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatSourceWetBoiler": {
+          "init": {
+            "parameters": [
+              "*",
+              "EnergySupply: str",
+              "EnergySupply_aux: str",
+              "boiler_location: hem_core.input_output.enums.HeatSourceLocation",
+              "efficiency_full_load: Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]",
+              "efficiency_part_load: Annotated[float, Gt(gt=0), Le(le=1.12)]",
+              "electricity_circ_pump: Annotated[float, Ge(ge=0)]",
+              "electricity_full_load: Annotated[float, Ge(ge=0)]",
+              "electricity_part_load: Annotated[float, Ge(ge=0)]",
+              "electricity_standby: Annotated[float, Ge(ge=0)]",
+              "modulation_load: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "rated_power: Annotated[float, Gt(gt=0)]",
+              "type: Literal[<HeatSourceWetType.BOILER: 'Boiler'>]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatSourceWetHIU": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HeatSourceWetType.HIU: 'HIU'>]",
+              "EnergySupply: str",
+              "HIU_daily_loss: Annotated[float, Gt(gt=0)]",
+              "building_level_distribution_losses: Annotated[float, Ge(ge=0)]",
+              "power_max: Annotated[float, Gt(gt=0)]",
+              "power_circ_pump: Annotated[float | None, Ge(ge=0)] = None",
+              "power_aux: Annotated[float | None, Gt(gt=0)] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatSourceWetHeatBatteryDryCore": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['HeatBattery']",
+              "battery_type: Literal['dry_core']",
+              "ControlCharge: str",
+              "EnergySupply: str",
+              "electricity_circ_pump: float",
+              "electricity_standby: float",
+              "pwr_in: float",
+              "state_of_charge_init: Annotated[float, Ge(ge=0.0), Le(le=1.0)]",
+              "rated_power_instant: float",
+              "heat_storage_capacity: float",
+              "number_of_units: Annotated[int, Ge(ge=1)]",
+              "dry_core_min_output: list[typing.Annotated[list[float], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=2), MaxLen(max_length=2)])]]",
+              "dry_core_max_output: list[typing.Annotated[list[float], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=2), MaxLen(max_length=2)])]]",
+              "fan_pwr: float"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatSourceWetHeatBatteryPCM": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HeatSourceWetType.HEAT_BATTERY: 'HeatBattery'>]",
+              "battery_type: Literal['pcm']",
+              "A: float",
+              "B: float",
+              "ControlCharge: str",
+              "EnergySupply: str",
+              "inlet_diameter_mm: Annotated[float, Gt(gt=0)]",
+              "electricity_circ_pump: Annotated[float, Ge(ge=0)]",
+              "electricity_standby: Annotated[float, Gt(gt=0)]",
+              "flow_rate_l_per_min: Annotated[float, Gt(gt=0)]",
+              "heat_storage_kJ_per_K_above_Phase_transition: Annotated[float, Gt(gt=0)]",
+              "heat_storage_kJ_per_K_below_Phase_transition: Annotated[float, Gt(gt=0)]",
+              "heat_storage_kJ_per_K_during_Phase_transition: Annotated[float, Gt(gt=0)]",
+              "max_rated_losses: Annotated[float, Gt(gt=0)]",
+              "max_temperature: Annotated[float, Ge(ge=-273.15)]",
+              "number_of_units: Annotated[int, Ge(ge=1)]",
+              "phase_transition_temperature_upper: Annotated[float, Ge(ge=-273.15)]",
+              "phase_transition_temperature_lower: Annotated[float, Ge(ge=-273.15)]",
+              "rated_charge_power: Annotated[float, Gt(gt=0)]",
+              "simultaneous_charging_and_discharging: bool",
+              "velocity_in_HEX_tube_at_1_l_per_min_m_per_s: Annotated[float, Gt(gt=0)]",
+              "temp_init: Annotated[float, Ge(ge=-273.15)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HeatSourceWetHeatPump": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HeatSourceWetType.HEAT_PUMP: 'HeatPump'>]",
+              "BufferTank: hem_core.input_output.input.HeatPumpBufferTank | None = None",
+              "EnergySupply: str",
+              "EnergySupply_heat_network: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='EnergySupply', alias_priority=2, description=\"References a key (e.g., 'mains elec', 'mains gas') in $.EnergySupply\", json_schema_extra={'reference_to': '$.energy_supply'})]] = None",
+              "MechanicalVentilation: str | None = None",
+              "backup_ctrl_type: hem_core.input_output.enums.HeatPumpBackupControlType",
+              "boiler: hem_core.input_output.input.HeatPumpBoiler | None = None",
+              "eahp_mixed_max_temp: Optional[Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Temperature measurement in degrees Celsius (unit: ˚C)', metadata=[Ge(ge=-273.15)])]] = None",
+              "eahp_mixed_min_temp: Optional[Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Temperature measurement in degrees Celsius (unit: ˚C)', metadata=[Ge(ge=-273.15)])]] = None",
+              "min_modulation_rate_20: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None",
+              "min_modulation_rate_35: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None",
+              "min_modulation_rate_55: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None",
+              "min_temp_diff_flow_return_for_hp_to_operate: Annotated[float, Ge(ge=0)]",
+              "modulating_control: bool",
+              "power_crankcase_heater: Annotated[float, Ge(ge=0)]",
+              "power_heating_circ_pump: Annotated[float, Ge(ge=0)] = 0.0",
+              "power_heating_warm_air_fan: Annotated[float | None, Ge(ge=0)] = None",
+              "power_max_backup: Annotated[float | None, Gt(gt=0)] = None",
+              "power_off: Annotated[float, Ge(ge=0)]",
+              "power_source_circ_pump: Annotated[float, Ge(ge=0)]",
+              "power_standby: Annotated[float, Ge(ge=0)]",
+              "sink_type: hem_core.input_output.enums.HeatPumpSinkType",
+              "source_type: hem_core.input_output.enums.HeatPumpSourceType",
+              "temp_distribution_heat_network: Annotated[float | None, Gt(gt=0)] = None",
+              "temp_lower_operating_limit: Annotated[float, Ge(ge=-273.15)]",
+              "temp_return_feed_max: Annotated[float | None, Gt(gt=0)] = None",
+              "test_data_EN14825: list[hem_core.input_output.input.HeatPumpTestDatum]",
+              "time_constant_onoff_operation: Annotated[float, Gt(gt=0)]",
+              "time_delay_backup: Annotated[float | None, Ge(ge=0)] = None",
+              "var_flow_temp_ctrl_during_test: bool"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_backup_configuration": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "HeatSourceWetServiceWaterRegular": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterHeatSourceType.HEAT_SOURCE_WET_SERVICE_WATER_REGULAR: 'HeatSourceWet'>]",
+              "Controlmax: str",
+              "Controlmin: str",
+              "heater_position: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "name: str",
+              "temp_flow_limit_upper: Annotated[float | None, Gt(gt=0)] = None",
+              "thermostat_position: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HotWaterDemand": {
+          "init": {
+            "parameters": [
+              "*",
+              "Bath: dict[str, hem_core.input_output.input.Bath] | None = None",
+              "Distribution: list[hem_core.input_output.input.WaterPipeworkSimple] | dict[str, list[hem_core.input_output.input.WaterPipeworkSimple]] | None = None",
+              "Other: dict[str, hem_core.input_output.input.OtherWaterUse] | None = None",
+              "Shower: dict[str, typing.Annotated[hem_core.input_output.input.ShowerMixer | hem_core.input_output.input.ShowerInstantElectric, FieldInfo(annotation=NoneType, required=True, discriminator='type')]] | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HotWaterSourceCombiBoiler": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterSourceType.COMBI_BOILER: 'CombiBoiler'>]",
+              "ColdWaterSource: str",
+              "HeatSourceWet: str",
+              "daily_HW_usage: Annotated[float, Gt(gt=0)]",
+              "rejected_energy_1: Annotated[float | None, Ge(ge=0)] = None",
+              "rejected_factor_3: float | None = None",
+              "separate_DHW_tests: hem_core.input_output.enums.BoilerHotWaterTest",
+              "setpoint_temp: Annotated[float, Ge(ge=0), Le(le=100)]",
+              "storage_loss_factor_2: Annotated[float | None, Ge(ge=0)] = None",
+              "storage_loss_factor_1: Annotated[float | None, Ge(ge=0)] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_dhw_tests_inputs": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "HotWaterSourceHUI": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterSourceType.HIU: 'HIU'>]",
+              "ColdWaterSource: str",
+              "HeatSourceWet: str",
+              "setpoint_temp: Optional[Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Running water temperature 0-100 (unit: ˚C)', metadata=[Ge(ge=0), Le(le=100)])]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HotWaterSourceHeatBattery": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterSourceType.HEAT_BATTERY: 'HeatBattery'>]",
+              "ColdWaterSource: str",
+              "HeatSourceWet: str",
+              "setpoint_temp: Annotated[float, Ge(ge=0), Le(le=100)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HotWaterSourcePointOfUse": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterSourceType.POINT_OF_USE: 'PointOfUse'>]",
+              "ColdWaterSource: str",
+              "EnergySupply: str",
+              "efficiency: Optional[Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]]",
+              "setpoint_temp: Annotated[float, Ge(ge=0), Le(le=100)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "HotWaterSourceSmartHotWaterTank": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterSourceType.SMART_HOT_WATER_TANK: 'SmartHotWaterTank'>]",
+              "ColdWaterSource: str",
+              "EnergySupply_pump: str",
+              "HeatSource: dict[str, typing.Annotated[hem_core.input_output.input.ImmersionHeater | hem_core.input_output.input.SolarThermalSystem | hem_core.input_output.input.HeatSourceWetServiceWaterRegular | hem_core.input_output.input.HeatPumpHotWaterOnly, FieldInfo(annotation=NoneType, required=True, discriminator='type')]]",
+              "daily_losses: Annotated[float, Gt(gt=0)]",
+              "init_temp: Annotated[float, Ge(ge=0), Le(le=100)]",
+              "max_flow_rate_pump_l_per_min: Annotated[float, Gt(gt=0)]",
+              "power_pump_kW: Annotated[float, Gt(gt=0)]",
+              "primary_pipework: list[hem_core.input_output.input.WaterPipework] | None = None",
+              "temp_setpnt_max: str",
+              "temp_usable: Annotated[float, Ge(ge=0), Le(le=100)]",
+              "volume: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ImmersionHeater": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterHeatSourceType.IMMERSION_HEATER: 'ImmersionHeater'>]",
+              "Controlmax: str",
+              "Controlmin: str",
+              "EnergySupply: str",
+              "heater_position: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "power: Annotated[float, Gt(gt=0)]",
+              "thermostat_position: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "IncompatibleSystemError": null,
+        "InfiltrationVentilation": {
+          "init": {
+            "parameters": [
+              "*",
+              "Control_VentAdjustMax: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "Control_VentAdjustMin: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "Control_WindowAdjust: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "Leaks: hem_core.input_output.input.VentilationLeaks",
+              "MechanicalVentilation: dict[str, hem_core.input_output.input.MechanicalVentilation] | None = None",
+              "Vents: dict[str, hem_core.input_output.input.Vent]",
+              "ach_max_static_calcs: Annotated[float | None, Ge(ge=0)] = None",
+              "ach_min_static_calcs: Annotated[float | None, Ge(ge=0)] = None",
+              "altitude: float",
+              "cross_vent_possible: bool",
+              "shield_class: hem_core.input_output.enums.VentilationShieldClass",
+              "terrain_class: hem_core.input_output.enums.TerrainClass",
+              "ventilation_zone_base_height: float",
+              "vent_opening_ratio_init: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "Input": {
+          "init": {
+            "parameters": [
+              "*",
+              "metadata: hem_core.input_output.input.Metadata | None = None",
+              "ApplianceGains: dict[str, hem_core.input_output.input.ApplianceGains] | None = None",
+              "ColdWaterSource: dict[str, hem_core.input_output.input.ColdWaterSource]",
+              "Control: dict[str, typing.Annotated[hem_core.input_output.input.ControlOnOffTimer | hem_core.input_output.input.ControlOnOffCostMinimising | hem_core.input_output.input.ControlSetpointTimer | hem_core.input_output.input.ControlChargeTarget | hem_core.input_output.input.ControlCombinationTime, FieldInfo(annotation=NoneType, required=True, description='Control schedule configuration for heating and energy systems.', discriminator='type')]] | None",
+              "EnergySupply: dict[str, hem_core.input_output.input.EnergySupply]",
+              "Events: hem_core.input_output.input.WaterHeatingEvents",
+              "ExternalConditions: hem_core.input_output.input.ExternalConditionsInput",
+              "HeatSourceWet: dict[str, typing.Annotated[typing.Union[hem_core.input_output.input.HeatSourceWetHeatPump, hem_core.input_output.input.HeatSourceWetBoiler, typing.Annotated[hem_core.input_output.input.HeatSourceWetHeatBatteryPCM | hem_core.input_output.input.HeatSourceWetHeatBatteryDryCore, FieldInfo(annotation=NoneType, required=True, discriminator='battery_type')], hem_core.input_output.input.HeatSourceWetHIU], FieldInfo(annotation=NoneType, required=True, discriminator='type')]] | None = None",
+              "HotWaterDemand: hem_core.input_output.input.HotWaterDemand",
+              "HotWaterSource: dict[str, typing.Annotated[hem_core.input_output.input.StorageTank | hem_core.input_output.input.HotWaterSourceCombiBoiler | hem_core.input_output.input.HotWaterSourceHUI | hem_core.input_output.input.HotWaterSourcePointOfUse | hem_core.input_output.input.HotWaterSourceSmartHotWaterTank | hem_core.input_output.input.HotWaterSourceHeatBattery, FieldInfo(annotation=NoneType, required=True, discriminator='type')]]",
+              "InfiltrationVentilation: hem_core.input_output.input.InfiltrationVentilation",
+              "InternalGains: hem_core.input_output.input.InternalGains",
+              "OnSiteGeneration: dict[str, typing.Union[hem_core.input_output.input.PhotovoltaicSystemWithPanels, typing.Annotated[hem_core.input_output.input.PhotovoltaicSystem, <object typing_extensions.deprecated>]]] | None = None",
+              "PreHeatedWaterSource: dict[str, hem_core.input_output.input.StorageTank] | None = None",
+              "SimulationTime: hem_core.input_output.input.SimulationTime",
+              "SmartApplianceControls: dict[str, hem_core.input_output.input.SmartApplianceControl] | None = None",
+              "SpaceCoolSystem: dict[str, typing.Annotated[hem_core.input_output.input.SpaceCoolSystemAirConditioning, FieldInfo(annotation=NoneType, required=True, discriminator='type')]] | None = None",
+              "SpaceHeatSystem: dict[str, typing.Annotated[hem_core.input_output.input.SpaceHeatSystemInstantElectricHeater | hem_core.input_output.input.SpaceHeatSystemElectricStorageHeater | hem_core.input_output.input.SpaceHeatSystemWetDistribution | hem_core.input_output.input.SpaceHeatSystemWarmAir, FieldInfo(annotation=NoneType, required=True, discriminator='type')]] | None = None",
+              "WWHRS: dict[str, hem_core.input_output.input.WasteWaterHeatRecoverySystem] | None = None",
+              "Zone: dict[str, hem_core.input_output.input.Zone]",
+              "temp_internal_air_static_calcs: float"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_cross_references": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            },
+            "validate_exhaust_air_heat_pump_ventilation_compatibility": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            },
+            "validate_shower_waste_water_heat_recovery_systems": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            },
+            "validate_time_series": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "InputFieldReferenceIntegrityError": null,
+        "InternalGains": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "InternalGainsDetails": {
+          "init": {
+            "parameters": [
+              "*",
+              "start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "time_series_step: Annotated[float, Gt(gt=0), Le(le=24)]",
+              "schedule: hem_core.input_output.input.ScheduleForDouble"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "MechanicalVentilation": {
+          "init": {
+            "parameters": [
+              "*",
+              "Control: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "EnergySupply: str",
+              "SFP: Annotated[float, Gt(gt=0)]",
+              "SFP_in_use_factor: Annotated[float, Ge(ge=1)] = 1",
+              "design_outdoor_air_flow_rate: Annotated[float, Gt(gt=0)]",
+              "ductwork: list[hem_core.input_output.input.MechanicalVentilationDuctwork] | None = None",
+              "mvhr_eff: Annotated[float | None, Ge(ge=0), Le(le=1)] = None",
+              "mvhr_location: hem_core.input_output.enums.MVHRLocation | None = None",
+              "sup_air_flw_ctrl: hem_core.input_output.enums.SupplyAirFlowRateControlType = <SupplyAirFlowRateControlType.ODA: 'ODA'>",
+              "sup_air_temp_ctrl: hem_core.input_output.enums.SupplyAirTemperatureControlType = <SupplyAirTemperatureControlType.NO_CTRL: 'NO_CTRL'>",
+              "vent_type: hem_core.input_output.enums.MechVentType",
+              "position_intake: hem_core.input_output.input.MechanicalVentilationPosition | None = None",
+              "position_exhaust: hem_core.input_output.input.MechanicalVentilationPosition | None = None",
+              "mid_height_air_flow_path: Annotated[float | None, Gt(gt=0)] = None",
+              "orientation360: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=360), FieldInfo(annotation=NoneType, required=True, description='The orientation angle of the inclined surface, expressed as the geographical azimuth angle of the horizontal projection of the inclined surface normal, 0 to 360 (unit: ˚)')]] = None",
+              "pitch: Optional[Annotated[float, FieldInfo(annotation=NoneType, required=True, description='Tilt angle of the surface from horizontal, between 0 and 180, where 0 means the external surface is facing up, 90 means the external surface is vertical and 180 means the external surface is facing down (unit: ˚)', metadata=[Ge(ge=0), Le(le=180)])]] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_position_fields": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "MechanicalVentilationDuctwork": {
+          "init": {
+            "parameters": [
+              "*",
+              "cross_section_shape: hem_core.input_output.enums.DuctShape",
+              "duct_perimeter_mm: Annotated[float | None, Gt(gt=0)] = None",
+              "duct_type: hem_core.input_output.enums.DuctType",
+              "external_diameter_mm: Annotated[float | None, Gt(gt=0)] = None",
+              "insulation_thermal_conductivity: Annotated[float, Gt(gt=0)]",
+              "insulation_thickness_mm: Annotated[float, Ge(ge=0)]",
+              "internal_diameter_mm: Annotated[float | None, Gt(gt=0)] = None",
+              "length: Annotated[float, Gt(gt=0)]",
+              "reflective: bool"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "MechanicalVentilationPosition": {
+          "init": {
+            "parameters": [
+              "*",
+              "orientation360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "mid_height_air_flow_path: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "Metadata": {
+          "init": {
+            "parameters": [
+              "*",
+              "hem_core_version: str | None = None",
+              "**extra_data: Any"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OtherWaterUse": {
+          "init": {
+            "parameters": [
+              "*",
+              "ColdWaterSource: str",
+              "HotWaterSource: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='HotWaterSource', alias_priority=2, description='References a key (e.g., \"hw cylinder\") in $.HotWaterSource', json_schema_extra={'reference_to': '$.hot_water_source'})]] = None",
+              "flowrate: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "PhotovoltaicPanel": {
+          "init": {
+            "parameters": [
+              "*",
+              "peak_power: Annotated[float, Gt(gt=0)]",
+              "ventilation_strategy: hem_core.input_output.enums.PhotovoltaicVentilationStrategy",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=90)]",
+              "orientation360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "base_height: Annotated[float, Ge(ge=0)]",
+              "height: float",
+              "width: Annotated[float, Gt(gt=0)]",
+              "shading: list[hem_core.input_output.input.WindowShadingObject | hem_core.input_output.input.WindowShadingObstacle]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "PhotovoltaicSystem": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['PhotovoltaicSystem']",
+              "peak_power: Annotated[float, Gt(gt=0)]",
+              "EnergySupply: str",
+              "height: Annotated[float, Gt(gt=0)]",
+              "width: Annotated[float, Gt(gt=0)]",
+              "shading: list[hem_core.input_output.input.WindowShadingObject | hem_core.input_output.input.WindowShadingObstacle]",
+              "inverter_is_inside: bool",
+              "inverter_peak_power_ac: Annotated[float, Gt(gt=0)]",
+              "inverter_peak_power_dc: Annotated[float, Gt(gt=0)]",
+              "inverter_type: hem_core.input_output.enums.InverterType",
+              "ventilation_strategy: hem_core.input_output.enums.PhotovoltaicVentilationStrategy",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=90)]",
+              "orientation360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "base_height: Annotated[float, Ge(ge=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "PhotovoltaicSystemWithPanels": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['PhotovoltaicSystem']",
+              "EnergySupply: str",
+              "inverter_is_inside: bool",
+              "inverter_peak_power_ac: Annotated[float, Gt(gt=0)]",
+              "inverter_peak_power_dc: Annotated[float, Gt(gt=0)]",
+              "inverter_type: hem_core.input_output.enums.InverterType",
+              "panels: Annotated[list[hem_core.input_output.input.PhotovoltaicPanel], MinLen(min_length=1)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleEntryForBoolean": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleEntryForDegreesCelsius": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleEntryForDouble": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleForBoolean": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_main_exists": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "ScheduleForDegreesCelsius": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_main_exists": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "ScheduleForDouble": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_main_exists": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "ScheduleRepeaterEntryForBoolean": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleRepeaterEntryForDegreesCelsius": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleRepeaterEntryForDouble": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleRepeaterForBoolean": {
+          "init": {
+            "parameters": [
+              "*",
+              "repeat: Annotated[int, Ge(ge=1)]",
+              "value: hem_core.input_output.input.ScheduleRepeaterValueForBoolean"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleRepeaterForDegreesCelsius": {
+          "init": {
+            "parameters": [
+              "*",
+              "repeat: Annotated[int, Ge(ge=1)]",
+              "value: hem_core.input_output.input.ScheduleRepeaterValueForDegreesCelsius"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleRepeaterForDouble": {
+          "init": {
+            "parameters": [
+              "*",
+              "repeat: Annotated[int, Ge(ge=1)]",
+              "value: hem_core.input_output.input.ScheduleRepeaterValueForDouble"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleRepeaterValueForBoolean": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleRepeaterValueForDegreesCelsius": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ScheduleRepeaterValueForDouble": {
+          "init": {
+            "parameters": [
+              "*",
+              "root: 'RootModelRootType' = PydanticUndefined"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ShadingObject": {
+          "init": {
+            "parameters": [
+              "*",
+              "distance: Annotated[float, Gt(gt=0)]",
+              "height: Annotated[float, Gt(gt=0)]",
+              "type: hem_core.input_output.enums.ShadingObjectType"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ShadingSegment": {
+          "init": {
+            "parameters": [
+              "*",
+              "end360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "shading: list[hem_core.input_output.input.ShadingObject] | None = None",
+              "start360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ShowerInstantElectric": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<ShowerType.INSTANT_ELECTRIC_SHOWER: 'InstantElecShower'>]",
+              "ColdWaterSource: str",
+              "EnergySupply: str",
+              "rated_power: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ShowerMixer": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<ShowerType.MIXER_SHOWER: 'MixerShower'>]",
+              "ColdWaterSource: str",
+              "HotWaterSource: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='HotWaterSource', alias_priority=2, description='References a key (e.g., \"hw cylinder\") in $.HotWaterSource', json_schema_extra={'reference_to': '$.hot_water_source'})]] = None",
+              "WWHRS: str | None = None",
+              "WWHRS_configuration: hem_core.input_output.enums.WWHRSConfiguration | None = None",
+              "flowrate: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_wwhrs_configuration": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "SimulationTime": {
+          "init": {
+            "parameters": [
+              "*",
+              "start: Annotated[float, Ge(ge=0)]",
+              "end: Annotated[float, Gt(gt=0)]",
+              "step: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SmartApplianceBattery": {
+          "init": {
+            "parameters": [
+              "*",
+              "battery_state_of_charge: Annotated[dict[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='EnergySupply', alias_priority=2, description=\"References a key (e.g., 'mains elec', 'mains gas') in $.EnergySupply\", json_schema_extra={'reference_to': '$.energy_supply'})], Annotated[list[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=1)])]], MinLen(min_length=1)]",
+              "energy_into_battery_from_generation: Annotated[dict[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='EnergySupply', alias_priority=2, description=\"References a key (e.g., 'mains elec', 'mains gas') in $.EnergySupply\", json_schema_extra={'reference_to': '$.energy_supply'})], Annotated[list[float], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=1)])]], MinLen(min_length=1)]",
+              "energy_into_battery_from_grid: Annotated[dict[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='EnergySupply', alias_priority=2, description=\"References a key (e.g., 'mains elec', 'mains gas') in $.EnergySupply\", json_schema_extra={'reference_to': '$.energy_supply'})], Annotated[list[float], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=1)])]], MinLen(min_length=1)]",
+              "energy_out_of_battery: Annotated[dict[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='EnergySupply', alias_priority=2, description=\"References a key (e.g., 'mains elec', 'mains gas') in $.EnergySupply\", json_schema_extra={'reference_to': '$.energy_supply'})], Annotated[list[float], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=1)])]], MinLen(min_length=1)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SmartApplianceControl": {
+          "init": {
+            "parameters": [
+              "*",
+              "Appliances: list[str]",
+              "battery24hr: hem_core.input_output.input.SmartApplianceBattery",
+              "non_appliance_demand_24hr: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='EnergySupply', alias_priority=2, description=\"References a key (e.g., 'mains elec', 'mains gas') in $.EnergySupply\", json_schema_extra={'reference_to': '$.energy_supply'})], typing.Annotated[list[float], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=1)])]]",
+              "power_timeseries: Annotated[dict[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='EnergySupply', alias_priority=2, description=\"References a key (e.g., 'mains elec', 'mains gas') in $.EnergySupply\", json_schema_extra={'reference_to': '$.energy_supply'})], Annotated[list[float], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=1)])]], MinLen(min_length=1)]",
+              "time_series_step: float"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SolarThermalSystem": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterHeatSourceType.SOLAR_THERMAL_SYSTEM: 'SolarThermalSystem'>]",
+              "Controlmax: str",
+              "EnergySupply: str",
+              "area_module: Annotated[float, Gt(gt=0)]",
+              "collector_mass_flow_rate: Annotated[float, Gt(gt=0)]",
+              "first_order_hlc: Annotated[float, Gt(gt=0)]",
+              "heater_position: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "incidence_angle_modifier: Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]",
+              "modules: Annotated[int, Ge(ge=1)]",
+              "orientation360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "peak_collector_efficiency: Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]",
+              "power_pump: Annotated[float, Ge(ge=0)]",
+              "power_pump_control: Annotated[float, Ge(ge=0)]",
+              "second_order_hlc: Annotated[float, Ge(ge=0)]",
+              "sol_loc: hem_core.input_output.enums.SolarCollectorLoopLocation",
+              "solar_loop_piping_hlc: Annotated[float, Gt(gt=0)]",
+              "thermostat_position: Optional[Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]] = None",
+              "tilt: Annotated[float, Ge(ge=0), Le(le=90)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SpaceCoolSystemAirConditioning": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['AirConditioning']",
+              "Control: str",
+              "EnergySupply: str",
+              "cooling_capacity: Annotated[float, Gt(gt=0)]",
+              "efficiency: Annotated[float, Gt(gt=0)]",
+              "frac_convective: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SpaceHeatSystemElectricStorageHeater": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['ElecStorageHeater']",
+              "ControlCharger: str",
+              "dry_core_max_output: list[typing.Annotated[list[typing.Annotated[float, Ge(ge=0)]], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=2), MaxLen(max_length=2)])]]",
+              "dry_core_min_output: list[typing.Annotated[list[typing.Annotated[float, Ge(ge=0)]], FieldInfo(annotation=NoneType, required=True, metadata=[MinLen(min_length=2), MaxLen(max_length=2)])]]",
+              "EnergySupply: str",
+              "air_flow_type: hem_core.input_output.enums.AirFlowType",
+              "Control: str",
+              "fan_pwr: Annotated[float, Ge(ge=0)]",
+              "frac_convective: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "n_units: Annotated[int, Gt(gt=0)]",
+              "pwr_in: Annotated[float, Gt(gt=0)]",
+              "state_of_charge_init: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "rated_power_instant: Annotated[float, Ge(ge=0)]",
+              "storage_capacity: Annotated[float, Gt(gt=0)]",
+              "Zone: str"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SpaceHeatSystemHeatSource": {
+          "init": {
+            "parameters": [
+              "*",
+              "name: str",
+              "temp_flow_limit_upper: Annotated[float | None, Gt(gt=0)] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SpaceHeatSystemInstantElectricHeater": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['InstantElecHeater']",
+              "EnergySupply: str",
+              "Control: str",
+              "frac_convective: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "rated_power: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SpaceHeatSystemWarmAir": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['WarmAir']",
+              "HeatSource: hem_core.input_output.input.SpaceHeatSystemHeatSource",
+              "Control: str",
+              "frac_convective: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "SpaceHeatSystemWetDistribution": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['WetDistribution']",
+              "HeatSource: hem_core.input_output.input.SpaceHeatSystemHeatSource",
+              "bypass_fraction_recirculated: Annotated[float | None, Ge(ge=0), Lt(lt=1)] = None",
+              "design_flow_rate: Annotated[float | None, Gt(gt=0)] = None",
+              "design_flow_temp: Annotated[float, Gt(gt=0)]",
+              "emitters: Annotated[list[Annotated[hem_core.input_output.input.WetEmitterRadiator | hem_core.input_output.input.WetEmitterUFH | hem_core.input_output.input.WetEmitterFanCoil, FieldInfo(annotation=NoneType, required=True, discriminator='type')]], MinLen(min_length=1)]",
+              "pipework: list[hem_core.input_output.input.WaterPipework] | None = None",
+              "ecodesign_controller: hem_core.input_output.input.EcoDesignController",
+              "max_flow_rate: Annotated[float | None, Gt(gt=0)] = None",
+              "min_flow_rate: Annotated[float | None, Gt(gt=0)] = None",
+              "temp_diff_emit_dsgn: Annotated[float, Gt(gt=0)]",
+              "thermal_mass: Annotated[float | None, Gt(gt=0)] = None",
+              "variable_flow: bool",
+              "Control: str",
+              "EnergySupply: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='EnergySupply', alias_priority=2, description=\"References a key (e.g., 'mains elec', 'mains gas') in $.EnergySupply\", json_schema_extra={'reference_to': '$.energy_supply'})]] = None",
+              "Zone: str"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_design_flow_rate": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            },
+            "validate_flow_rate": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "StorageTank": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<HotWaterSourceType.STORAGE_TANK: 'StorageTank'>]",
+              "ColdWaterSource: str",
+              "HeatSource: dict[str, typing.Annotated[hem_core.input_output.input.ImmersionHeater | hem_core.input_output.input.SolarThermalSystem | hem_core.input_output.input.HeatSourceWetServiceWaterRegular | hem_core.input_output.input.HeatPumpHotWaterOnly, FieldInfo(annotation=NoneType, required=True, discriminator='type')]]",
+              "daily_losses: Annotated[float, Gt(gt=0)]",
+              "heat_exchanger_surface_area: Annotated[float | None, Gt(gt=0)] = None",
+              "init_temp: Annotated[float, Ge(ge=0), Le(le=100)]",
+              "primary_pipework: list[hem_core.input_output.input.WaterPipework] | None = None",
+              "volume: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "StrictBaseModel": {
+          "init": {
+            "parameters": [
+              "*"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ThermalBridgingLinear": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<ThermalBridgingType.LINEAR: 'ThermalBridgeLinear'>]",
+              "length: Annotated[float, Gt(gt=0)]",
+              "linear_thermal_transmittance: float"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "ThermalBridgingPoint": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<ThermalBridgingType.POINT: 'ThermalBridgePoint'>]",
+              "heat_transfer_coeff: float"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "TimeSeriesBase": {
+          "init": {
+            "parameters": [
+              "*",
+              "start_day: Annotated[int, Ge(ge=0), Le(le=365)]",
+              "time_series_step: Annotated[float, Gt(gt=0), Le(le=24)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "Vent": {
+          "init": {
+            "parameters": [
+              "*",
+              "area_cm2: Annotated[float, Gt(gt=0)]",
+              "mid_height_air_flow_path: Annotated[float, Gt(gt=0)]",
+              "orientation360: Annotated[float, Interval(gt=None, ge=0, lt=None, le=360)]",
+              "pitch: Annotated[float, Ge(ge=0), Le(le=180)]",
+              "pressure_difference_ref: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "VentilationLeaks": {
+          "init": {
+            "parameters": [
+              "*",
+              "env_area: Annotated[float, Gt(gt=0)]",
+              "test_pressure: Annotated[float, Gt(gt=0)]",
+              "test_result: Annotated[float, Gt(gt=0)]",
+              "ventilation_zone_height: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WasteWaterHeatRecoverySystem": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal['WWHRS_Instantaneous']",
+              "ColdWaterSource: str",
+              "flow_rates: list[typing.Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Gt(gt=0)])]]",
+              "system_a_efficiencies: list[typing.Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Gt(gt=0), Le(le=100)])]] | None = None",
+              "system_a_utilisation_factor: Optional[Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]] = None",
+              "system_b_efficiencies: list[typing.Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Gt(gt=0), Le(le=100)])]] | None = None",
+              "system_b_utilisation_factor: Optional[Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]] = None",
+              "system_c_efficiencies: list[typing.Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Gt(gt=0), Le(le=100)])]] | None = None",
+              "system_c_utilisation_factor: Optional[Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)]] = None",
+              "system_b_efficiency_factor: Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)] = 0.81",
+              "system_c_efficiency_factor: Annotated[float, Interval(gt=0, ge=None, lt=None, le=1)] = 0.88"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_at_least_one_efficiency_set": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            },
+            "validate_flow_rates_and_efficiencies_length": {
+              "parameters": [
+                "self"
+              ],
+              "return": "typing.Self"
+            }
+          }
+        },
+        "WaterHeatingEvent": {
+          "init": {
+            "parameters": [
+              "*",
+              "duration: Annotated[float | None, Gt(gt=0)] = None",
+              "start: Annotated[float, Ge(ge=0)]",
+              "temperature: Annotated[float, Ge(ge=0), Le(le=100)]",
+              "volume: Annotated[float | None, Gt(gt=0)] = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WaterHeatingEvents": {
+          "init": {
+            "parameters": [
+              "*",
+              "Shower: dict[str, list[hem_core.input_output.input.WaterHeatingEvent]] | None = None",
+              "Bath: dict[str, list[hem_core.input_output.input.WaterHeatingEvent]] | None = None",
+              "Other: dict[str, list[hem_core.input_output.input.WaterHeatingEvent]] | None = None"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WaterPipework": {
+          "init": {
+            "parameters": [
+              "*",
+              "external_diameter_mm: Annotated[float, Gt(gt=0)]",
+              "insulation_thermal_conductivity: Annotated[float, Gt(gt=0)]",
+              "insulation_thickness_mm: Annotated[float, Ge(ge=0)]",
+              "internal_diameter_mm: Annotated[float, Gt(gt=0)]",
+              "length: Annotated[float, Gt(gt=0)]",
+              "location: hem_core.input_output.enums.WaterPipeworkLocation",
+              "pipe_contents: hem_core.input_output.enums.PipeworkContents",
+              "surface_reflectivity: bool"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WaterPipeworkSimple": {
+          "init": {
+            "parameters": [
+              "*",
+              "internal_diameter_mm: Annotated[float, Gt(gt=0)]",
+              "length: Annotated[float, Gt(gt=0)]",
+              "location: hem_core.input_output.enums.WaterPipeworkLocation"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WetEmitterFanCoil": {
+          "init": {
+            "parameters": [
+              "*",
+              "wet_emitter_type: Literal[<WetEmitterType.FANCOIL: 'fancoil'>]",
+              "fancoil_test_data: hem_core.input_output.input.FancoilTestData",
+              "frac_convective: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "n_units: Annotated[int | None, Gt(gt=0)] = 1"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WetEmitterRadiator": {
+          "init": {
+            "parameters": [
+              "*",
+              "wet_emitter_type: Literal[<WetEmitterType.RADIATOR: 'radiator'>]",
+              "c: Annotated[float | None, Gt(gt=0)] = None",
+              "c_per_m: Annotated[float | None, Gt(gt=0)] = None",
+              "thermal_mass: Annotated[float | None, Gt(gt=0)] = None",
+              "thermal_mass_per_m: Annotated[float | None, Gt(gt=0)] = None",
+              "length: Annotated[float | None, Gt(gt=0)] = None",
+              "frac_convective: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "n: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "validate_required_fields": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            }
+          }
+        },
+        "WetEmitterUFH": {
+          "init": {
+            "parameters": [
+              "*",
+              "wet_emitter_type: Literal[<WetEmitterType.UFH: 'ufh'>]",
+              "emitter_floor_area: Annotated[float, Gt(gt=0)]",
+              "equivalent_specific_thermal_mass: Annotated[float, Gt(gt=0)]",
+              "frac_convective: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "system_performance_factor: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WindowPart": {
+          "init": {
+            "parameters": [
+              "*",
+              "mid_height_air_flow_path: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WindowShadingObject": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: hem_core.input_output.enums.WindowShadingType",
+              "depth: Annotated[float, Gt(gt=0)]",
+              "distance: Annotated[float, Ge(ge=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WindowShadingObstacle": {
+          "init": {
+            "parameters": [
+              "*",
+              "type: Literal[<ShadingObjectType.OBSTACLE: 'obstacle'>]",
+              "height: Annotated[float, Gt(gt=0)]",
+              "distance: Annotated[float, Ge(ge=0)]",
+              "transparency: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "WindowTreatment": {
+          "init": {
+            "parameters": [
+              "*",
+              "Control_closing_irrad: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "Control_open: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "Control_opening_irrad: Optional[Annotated[str, FieldInfo(annotation=NoneType, required=True, alias='Control', alias_priority=2, description='References a key in $.Control', json_schema_extra={'reference_to': ['$.control', '$.smart_appliance_controls']})]] = None",
+              "controls: hem_core.input_output.enums.WindowTreatmentControl",
+              "delta_r: Annotated[float, Gt(gt=0)]",
+              "is_open: bool | None = None",
+              "opening_delay_hrs: float | None = None",
+              "trans_red: Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]",
+              "type: hem_core.input_output.enums.WindowTreatmentType"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "Zone": {
+          "init": {
+            "parameters": [
+              "*",
+              "BuildingElement: dict[str, typing.Annotated[typing.Union[hem_core.input_output.input.BuildingElementOpaque, hem_core.input_output.input.BuildingElementTransparent, typing.Annotated[hem_core.input_output.input.BuildingElementGroundSlabNoEdgeInsulation | hem_core.input_output.input.BuildingElementGroundSlabEdgeInsulation | hem_core.input_output.input.BuildingElementGroundSuspendedFloor | hem_core.input_output.input.BuildingElementGroundHeatedBasement | hem_core.input_output.input.BuildingElementGroundUnheatedBasement, FieldInfo(annotation=NoneType, required=True, discriminator='floor_type')], hem_core.input_output.input.BuildingElementAdjacentConditionedSpace, hem_core.input_output.input.BuildingElementAdjacentUnconditionedSpaceSimple, hem_core.input_output.input.BuildingElementPartyWall], FieldInfo(annotation=NoneType, required=True, discriminator='type')]]",
+              "SpaceCoolSystem: Union[str, Annotated[list[str], FieldInfo(annotation=NoneType, required=True, json_schema_extra={'uniqueItems': True}), AfterValidator(func=<function _validator_unique_list>)], NoneType] = None",
+              "SpaceHeatSystem: Union[str, Annotated[list[str], FieldInfo(annotation=NoneType, required=True, json_schema_extra={'uniqueItems': True}), AfterValidator(func=<function _validator_unique_list>)], NoneType] = None",
+              "ThermalBridging: float | dict[str, typing.Annotated[hem_core.input_output.input.ThermalBridgingLinear | hem_core.input_output.input.ThermalBridgingPoint, FieldInfo(annotation=NoneType, required=True, discriminator='type')]]",
+              "area: Annotated[float, Gt(gt=0)]",
+              "temp_setpnt_basis: hem_core.input_output.enums.ZoneTemperatureControlBasis | None = None",
+              "temp_setpnt_init: Annotated[float, Ge(ge=-273.15)]",
+              "volume: Annotated[float, Gt(gt=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        }
+      },
+      "functions": {}
+    },
+    "output": {
+      "classes": {
+        "Output": {
+          "init": {
+            "parameters": [
+              "*",
+              "static: hem_core.input_output.output.OutputStatic",
+              "core: hem_core.input_output.output.OutputCore",
+              "summary: hem_core.input_output.output.OutputSummary",
+              "metadata: hem_core.input_output.output.OutputMetadata"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputCOP": {
+          "init": {
+            "parameters": [
+              "*",
+              "space_heating_system: dict[str, float | None]",
+              "space_cooling_system: dict[str, float | None]",
+              "hot_water_system: dict[str, float | None]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputCore": {
+          "init": {
+            "parameters": [
+              "*",
+              "timestep_array: list[float]",
+              "results_totals: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "results_end_user: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy end use key')], list[float]]]",
+              "energy_import: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "energy_export: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "grid_to_consumption: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "generation_to_grid: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "energy_generated_consumed: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "energy_to_storage: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "energy_from_storage: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "storage_from_grid: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "battery_state_of_charge: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[typing.Annotated[float, Interval(gt=None, ge=0, lt=None, le=1)]]]",
+              "energy_diverted: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "beta_factor: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], list[float]]",
+              "zone_list: list[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Zone key')]]",
+              "zone_data: hem_core.input_output.output.OutputZoneData",
+              "heating_cooling_system: hem_core.input_output.output.OutputHeatingCoolingSystem",
+              "cop: hem_core.input_output.output.OutputCOP",
+              "ductwork_gains: list[float]",
+              "heat_balance_all: dict[str, dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Zone key')], dict[str, list[float]]]]",
+              "heat_source_wet_results: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Heat source wet key')], dict[str, list[float] | dict]]",
+              "heat_source_wet_results_annual: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Heat source wet key')], dict[str, float | dict]]",
+              "hot_water_source_results: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Hot water source key')], list[list[str | float | None]]]",
+              "emitters: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Space heating system key')], dict[int, hem_core.input_output.output.OutputEmitters]]",
+              "electric_storage_heaters: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Space heating system key')], dict[int, list[float]]]",
+              "ventilation: list[list[float | str]]",
+              "hot_water_systems: hem_core.input_output.output.OutputHotWaterSystems"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputEmitters": {
+          "init": {
+            "parameters": [
+              "*",
+              "simulation_time_idx: Annotated[int, Ge(ge=0)]",
+              "energy_demand: Annotated[float, Ge(ge=0)]",
+              "temp_emitter_required: Annotated[float, Ge(ge=0)]",
+              "time_heating_start: Annotated[float, Ge(ge=0)]",
+              "energy_provided_by_heat_source: Annotated[float, Ge(ge=0)]",
+              "temp_emitter: float | str",
+              "temp_emitter_max: Annotated[float, Ge(ge=0)]",
+              "energy_released_from_emitters: float",
+              "temp_flow_target: Annotated[float, Ge(ge=0)]",
+              "temp_return_target: Annotated[float, Ge(ge=0)]",
+              "temp_emitter_max_is_final_temp: bool",
+              "energy_required_from_heat_source: Annotated[float, Ge(ge=0)]",
+              "fan_energy_kWh: Annotated[float, Ge(ge=0)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputHeatingCoolingSystem": {
+          "init": {
+            "parameters": [
+              "*",
+              "heating_system_output: dict[str | None, list[float]]",
+              "cooling_system_output: dict[str | None, list[float]]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputHotWaterSystems": {
+          "init": {
+            "parameters": [
+              "*",
+              "demand: dict[str, list[float]]",
+              "energy_demand_at_hot_water_source: dict[str, list[float]]",
+              "energy_demand_at_tapping_points: dict[str, list[float]]",
+              "duration: dict[str, list[float]]",
+              "events_count: dict[str, list[int]]",
+              "losses_pipework: dict[str, list[float]]",
+              "losses_primary_pipework: dict[str, list[float]]",
+              "losses_storage: dict[str, list[float]]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputMetadata": {
+          "init": {
+            "parameters": [
+              "*",
+              "hem_core_version: str"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputStatic": {
+          "init": {
+            "parameters": [
+              "*",
+              "heat_transfer_coefficient: float",
+              "heat_loss_param: float",
+              "heat_capacity_param: float",
+              "heat_loss_form_factor: float",
+              "temperature_air_internal: Annotated[float, Ge(ge=-273.15)]",
+              "temperature_air_external: float"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputSummary": {
+          "init": {
+            "parameters": [
+              "*",
+              "total_floor_area: Annotated[float, Gt(gt=0)]",
+              "space_heat_demand_total: float",
+              "space_cool_demand_total: float",
+              "electricity_peak_consumption: hem_core.input_output.output.OutputSummaryPeakElectricityConsumption",
+              "energy_supply: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy supply key')], hem_core.input_output.output.OutputSummaryEnergySupply]",
+              "delivered_energy: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Fuel key')], dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Energy end use key')], float]]",
+              "hot_water_demand_daily_75th_percentile: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Hot water source key')], float]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputSummaryEnergySupply": {
+          "init": {
+            "parameters": [
+              "*",
+              "generation: float",
+              "consumption: float",
+              "generation_to_consumption: float",
+              "generation_to_grid: float",
+              "generation_to_diverter: float",
+              "grid_to_consumption: float",
+              "grid_to_storage: float",
+              "generation_to_storage: float",
+              "storage_to_consumption: float",
+              "storage_efficiency: float | None",
+              "net_import: float",
+              "total_gross_import: float",
+              "total_gross_export: float"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputSummaryPeakElectricityConsumption": {
+          "init": {
+            "parameters": [
+              "*",
+              "peak: float",
+              "index: int",
+              "month: Annotated[int, Ge(ge=1), Le(le=12)]",
+              "day: Annotated[int, Ge(ge=1), Le(le=31)]",
+              "hour: Annotated[float, Ge(ge=0), Lt(lt=24)]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "OutputZoneData": {
+          "init": {
+            "parameters": [
+              "*",
+              "internal_gains: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Zone key')], list[float]]",
+              "solar_gains: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Zone key')], list[float]]",
+              "operative_temp: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Zone key')], list[float]]",
+              "internal_air_temp: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Zone key')], list[float]]",
+              "space_heat_demand: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Zone key')], list[float]]",
+              "space_cool_demand: dict[typing.Annotated[str, FieldInfo(annotation=NoneType, required=True, description='Zone key')], list[float]]"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        },
+        "StrictBaseModel": {
+          "init": {
+            "parameters": [
+              "*"
+            ],
+            "return": "None"
+          },
+          "methods": {}
+        }
+      },
+      "functions": {}
+    },
+    "read_weather_file": {
+      "classes": {},
+      "functions": {
+        "cibse_weather_data_to_dict": {
+          "parameters": [
+            "weather_file: pathlib.Path"
+          ],
+          "return": "dict"
+        },
+        "cibse_weather_data_to_epw": {
+          "parameters": [
+            "weather_filename: pathlib.Path"
+          ],
+          "return": "str"
+        },
+        "epw_weather_data_to_dict": {
+          "parameters": [
+            "weather_file: pathlib.Path"
+          ],
+          "return": "dict"
+        },
+        "validate_weather_data": {
+          "parameters": [
+            "weather_data: dict[str, typing.Any]"
+          ],
+          "return": "None"
+        }
+      }
+    },
+    "schedule": {
+      "classes": {},
+      "functions": {
+        "expand_events": {
+          "parameters": [
+            "event_list: list[dict[str, typing.Any]]",
+            "sim_timestep: int | float",
+            "tot_timesteps: int",
+            "name: str",
+            "event_type: str",
+            "schedule: dict[int, typing.Any]"
+          ],
+          "return": "dict[int, typing.Any]"
+        },
+        "expand_schedule": {
+          "parameters": [
+            "sched_type: type[bool | float | int]",
+            "sched_dict: dict[str, list[bool | float | int | str | dict[str, typing.Any] | None]]",
+            "sched_main: str",
+            "nullable: bool"
+          ],
+          "return": "list[bool | float | int | None]"
+        },
+        "validate_schedule_length": {
+          "parameters": [
+            "schedule: Sequence[Any]",
+            "expected_length: int"
+          ],
+          "return": "None"
+        }
+      }
+    },
+    "simulation_time": {
+      "classes": {
+        "SimulationTime": {
+          "init": {
+            "parameters": [
+              "start_time: float",
+              "end_time: float",
+              "step: float"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "current": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "current_day": {
+              "parameters": [
+                "self"
+              ],
+              "return": "int"
+            },
+            "current_hour": {
+              "parameters": [
+                "self"
+              ],
+              "return": "int"
+            },
+            "current_month": {
+              "parameters": [
+                "self"
+              ],
+              "return": "int"
+            },
+            "current_month_start_end_hour": {
+              "parameters": [
+                "self"
+              ],
+              "return": "tuple[int, int]"
+            },
+            "hour_of_day": {
+              "parameters": [
+                "self"
+              ],
+              "return": "int"
+            },
+            "index": {
+              "parameters": [
+                "self"
+              ],
+              "return": "int"
+            },
+            "reset": {
+              "parameters": [
+                "self"
+              ],
+              "return": "None"
+            },
+            "time_series_idx": {
+              "parameters": [
+                "self",
+                "start_day: int",
+                "time_series_step: float"
+              ],
+              "return": "int"
+            },
+            "time_series_idx_days": {
+              "parameters": [
+                "self",
+                "start_day: int",
+                "charge_calc_time: float = 21"
+              ],
+              "return": "int"
+            },
+            "timestep": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            },
+            "total_steps": {
+              "parameters": [
+                "self"
+              ],
+              "return": "int"
+            },
+            "total_steps_based_on_step": {
+              "parameters": [
+                "self",
+                "start_day: int",
+                "step: float | None = None"
+              ],
+              "return": "int"
+            }
+          }
+        }
+      },
+      "functions": {
+        "create_simulation_time": {
+          "parameters": [
+            "simulation_time_dict: dict"
+          ],
+          "return": "None"
+        }
+      }
+    },
+    "units": {
+      "classes": {
+        "Orientation360": {
+          "init": {
+            "parameters": [
+              "angle: float"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "create_from_180": {
+              "parameters": [
+                "angle180: float"
+              ],
+              "return": "None"
+            },
+            "orientation_difference": {
+              "parameters": [
+                "orientation1: 'Orientation360'",
+                "orientation2: 'Orientation360'"
+              ],
+              "return": "float"
+            },
+            "transform_to_180": {
+              "parameters": [
+                "self"
+              ],
+              "return": "float"
+            }
+          }
+        }
+      },
+      "functions": {
+        "Celcius2Kelvin": {
+          "parameters": [
+            "temp_C: float"
+          ],
+          "return": "float"
+        },
+        "Kelvin2Celcius": {
+          "parameters": [
+            "temp_K: float"
+          ],
+          "return": "float"
+        },
+        "average_monthly_to_annual": {
+          "parameters": [
+            "list_monthly_averages: list[float]"
+          ],
+          "return": "float"
+        },
+        "calculate_thermal_resistance_of_virtual_layer": {
+          "parameters": [
+            "u_value: float",
+            "thermal_resistance_floor_construction: float"
+          ],
+          "return": "float"
+        },
+        "convert_profile_to_daily": {
+          "parameters": [
+            "original_profile: list[float]",
+            "timestep: float"
+          ],
+          "return": "None"
+        }
+      }
+    },
+    "water_heat_demand_utilities": {
+      "classes": {
+        "WaterEventResult": {
+          "init": {
+            "parameters": [
+              "type: str",
+              "temperature_warm: float",
+              "volume_warm: float",
+              "volume_hot: float",
+              "event_duration: float"
+            ],
+            "return": "None"
+          },
+          "methods": {
+            "format_event": {
+              "parameters": [
+                "self"
+              ],
+              "return": "str"
+            }
+          }
+        }
+      },
+      "functions": {
+        "calc_fraction_hot_water": {
+          "parameters": [
+            "temperature_target: float",
+            "temperature_hot: float",
+            "temperature_cold: float"
+          ],
+          "return": "float"
+        },
+        "calculate_volume_weighted_average_temperature": {
+          "parameters": [
+            "temp_volume_pairs: list[tuple[float, float]]",
+            "expected_volume: float | None = None",
+            "tolerance: float = 1e-10"
+          ],
+          "return": "float"
+        },
+        "summarise_events": {
+          "parameters": [
+            "events: list[hem_core.water_heat_demand.misc.WaterEventResult]"
+          ],
+          "return": "str"
+        },
+        "volume_hot_water_required": {
+          "parameters": [
+            "volume_warm_water: float",
+            "temperature_target: float",
+            "func_temperature_hot_water: collections.abc.Callable[[float], float]",
+            "func_temperature_cold_water: collections.abc.Callable[[float], list[tuple[float, float]]]"
+          ],
+          "return": "float | None"
+        },
+        "water_demand_to_kWh": {
+          "parameters": [
+            "litres_demand: float",
+            "demand_temperature: float",
+            "cold_temperature: float"
+          ],
+          "return": "float"
+        }
+      }
+    }
+  },
+  "classes": {
+    "BuildingElement": {
+      "init": {
+        "parameters": [
+          "ext_cond: hem_core.external_conditions.ExternalConditions",
+          "area: float",
+          "pitch: float"
+        ],
+        "return": "None"
+      },
+      "methods": {}
+    },
+    "ColdWaterSource": {
+      "init": {
+        "parameters": [
+          "cold_water_temps: list[float]",
+          "simulation_time: hem_core.simulation_time.SimulationTime",
+          "start_day: int",
+          "time_series_step: float"
+        ],
+        "return": "None"
+      },
+      "methods": {
+        "draw_off_water": {
+          "parameters": [
+            "self",
+            "volume_needed: float"
+          ],
+          "return": "list[tuple[float, float]]"
+        },
+        "get_temp_cold_water": {
+          "parameters": [
+            "self",
+            "volume_needed: float"
+          ],
+          "return": "list[tuple[float, float]]"
+        }
+      }
+    },
+    "DHWDemand": {
+      "init": {
+        "parameters": [
+          "showers_dict: dict[str, dict[str, typing.Any]]",
+          "baths_dict: dict[str, dict[str, typing.Any]]",
+          "other_hw_users_dict: dict[str, dict[str, typing.Any]]",
+          "hw_pipework_inputs: list[dict[str, typing.Any]] | dict[str, list[dict[str, typing.Any]]]",
+          "cold_water_sources: dict[str, hem_core.water_heat_demand.cold_water_source.ColdWaterSource]",
+          "wwhrs: dict[str, hem_core.heating_systems.wwhrs.WWHRS_Instantaneous]",
+          "energy_supplies: dict[str, hem_core.energy_supply.energy_supply.EnergySupply]",
+          "event_schedules: dict[int, typing.Any]",
+          "hot_water_sources: dict[str, hem_core.water_heat_demand.dhw_demand.HotWaterSource]",
+          "pre_heated_water_sources: dict[str, hem_core.water_heat_demand.dhw_demand.PreHeatWaterSource] | None = None"
+        ],
+        "return": "None"
+      },
+      "methods": {
+        "calc_pipework_losses": {
+          "parameters": [
+            "self",
+            "hot_water_source_name: str",
+            "no_of_hot_water_events: int",
+            "demand_water_temperature: float",
+            "internal_air_temperature: float",
+            "external_air_temperature: float"
+          ],
+          "return": "tuple[float, float]"
+        },
+        "calc_water_heating": {
+          "parameters": [
+            "self",
+            "t_idx: int",
+            "timestep: int | float",
+            "internal_air_temperature: float",
+            "external_air_temperature: float"
+          ],
+          "return": "tuple[dict[str, float], dict[str, float], dict[str, int], dict[str, float], dict[str, float], dict[str, float], dict[str, float], dict[str, float], dict[str, float], dict[str, float]]"
+        },
+        "hot_water_demand": {
+          "parameters": [
+            "self",
+            "t_idx: int"
+          ],
+          "return": "tuple[dict[str, float], dict[str, float], dict[str, int], dict[str, float], dict[str, list[hem_core.water_heat_demand.misc.WaterEventResult]]]"
+        },
+        "pipework_losses_and_internal_gains_from_hot_water_events": {
+          "parameters": [
+            "self",
+            "hot_water_source_name: str",
+            "usage_events: list[hem_core.water_heat_demand.misc.WaterEventResult]",
+            "internal_air_temperature: float",
+            "external_air_temperature: float"
+          ],
+          "return": "tuple[float, float, float]"
+        }
+      }
+    },
+    "EnergySupply": {
+      "init": {
+        "parameters": [
+          "fuel_type: hem_core.input_output.enums.FuelType",
+          "simulation_time: hem_core.simulation_time.SimulationTime",
+          "tariff_path: pathlib.Path | None = None",
+          "tariff: str | None = None",
+          "threshold_charges: list[float] | None = None",
+          "threshold_prices: list[float] | None = None",
+          "electric_battery: hem_core.energy_supply.elec_battery.ElectricBattery | None = None",
+          "priority: list[str] | None = None",
+          "is_export_capable: bool = True"
+        ],
+        "return": "None"
+      },
+      "methods": {
+        "beta_factor_function": {
+          "parameters": [
+            "self",
+            "supply: float",
+            "demand: float",
+            "beta_factor_function: str"
+          ],
+          "return": "float"
+        },
+        "calc_energy_import_export_betafactor": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        },
+        "calc_energy_import_from_grid_to_battery": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        },
+        "connect_diverter": {
+          "parameters": [
+            "self",
+            "diverter: hem_core.heating_systems.storage_tank.PVDiverter"
+          ],
+          "return": "None"
+        },
+        "connection": {
+          "parameters": [
+            "self",
+            "end_user_name: str"
+          ],
+          "return": "hem_core.energy_supply.energy_supply.EnergySupplyConnection"
+        },
+        "fuel_type": {
+          "parameters": [
+            "self"
+          ],
+          "return": "hem_core.input_output.enums.FuelType"
+        },
+        "get_battery_available_charge": {
+          "parameters": [
+            "self"
+          ],
+          "return": "float | None"
+        },
+        "get_battery_charge_efficiency": {
+          "parameters": [
+            "self"
+          ],
+          "return": "float | None"
+        },
+        "get_battery_discharge_efficiency": {
+          "parameters": [
+            "self"
+          ],
+          "return": "float | None"
+        },
+        "get_battery_max_capacity": {
+          "parameters": [
+            "self"
+          ],
+          "return": "float | None"
+        },
+        "get_battery_max_discharge": {
+          "parameters": [
+            "self",
+            "charge: float"
+          ],
+          "return": "float | None"
+        },
+        "get_beta_factor": {
+          "parameters": [
+            "self"
+          ],
+          "return": "list[float]"
+        },
+        "get_energy_diverted": {
+          "parameters": [
+            "self"
+          ],
+          "return": "list[float]"
+        },
+        "get_energy_export": {
+          "parameters": [
+            "self"
+          ],
+          "return": "list[float]"
+        },
+        "get_energy_export_from_generation": {
+          "parameters": [
+            "self"
+          ],
+          "return": "list[float]"
+        },
+        "get_energy_generated_consumed": {
+          "parameters": [
+            "self"
+          ],
+          "return": "list[float]"
+        },
+        "get_energy_import": {
+          "parameters": [
+            "self"
+          ],
+          "return": "list[float]"
+        },
+        "get_energy_to_from_battery": {
+          "parameters": [
+            "self"
+          ],
+          "return": "tuple[list[float], list[float], list[float], list[float]]"
+        },
+        "get_grid_to_consumption": {
+          "parameters": [
+            "self"
+          ],
+          "return": "list[float]"
+        },
+        "has_battery": {
+          "parameters": [
+            "self"
+          ],
+          "return": "bool"
+        },
+        "is_charging_from_grid": {
+          "parameters": [
+            "self"
+          ],
+          "return": "tuple[bool, float, bool] | tuple[bool, float | None, bool]"
+        },
+        "results_by_end_user": {
+          "parameters": [
+            "self"
+          ],
+          "return": "dict[str, list[float]]"
+        },
+        "results_by_end_user_single_step": {
+          "parameters": [
+            "self",
+            "t_idx: int"
+          ],
+          "return": "dict[str, float]"
+        },
+        "results_total": {
+          "parameters": [
+            "self"
+          ],
+          "return": "list[float]"
+        },
+        "timestep_end": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        }
+      }
+    },
+    "EnergySupplyConnection": {
+      "init": {
+        "parameters": [
+          "energy_supply: 'EnergySupply'",
+          "end_user_name: str"
+        ],
+        "return": "None"
+      },
+      "methods": {
+        "demand_energy": {
+          "parameters": [
+            "self",
+            "amount_demanded: float"
+          ],
+          "return": "None"
+        },
+        "energy_out": {
+          "parameters": [
+            "self",
+            "amount_demanded: float"
+          ],
+          "return": "None"
+        },
+        "fuel_type": {
+          "parameters": [
+            "self"
+          ],
+          "return": "hem_core.input_output.enums.FuelType"
+        },
+        "supply_energy": {
+          "parameters": [
+            "self",
+            "amount_produced: float"
+          ],
+          "return": "None"
+        }
+      }
+    },
+    "HeatFlowDirection": {
+      "type": "Enum",
+      "members": {
+        "HORIZONTAL": "HORIZONTAL",
+        "UPWARDS": "UPWARDS",
+        "DOWNWARDS": "DOWNWARDS"
+      }
+    },
+    "Project": {
+      "init": {
+        "parameters": [
+          "proj_dict: dict",
+          "project_input: hem_core.input_output.input.Input",
+          "print_heat_balance: bool",
+          "detailed_output_heating_cooling: bool",
+          "use_fast_solver: bool",
+          "tariff_data_filename: pathlib.Path | None",
+          "display_progress: bool = False"
+        ],
+        "return": "None"
+      },
+      "methods": {
+        "calc_HCP": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        },
+        "calc_HLFF": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        },
+        "external_conditions": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        },
+        "run": {
+          "parameters": [
+            "self"
+          ],
+          "return": "hem_core.input_output.output.Output"
+        },
+        "temp_internal_air_prev_timestep": {
+          "parameters": [
+            "self"
+          ],
+          "return": "float"
+        },
+        "total_floor_area": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        }
+      }
+    },
+    "WWHRSInstantaneous": {
+      "init": {
+        "parameters": [
+          "flow_rates",
+          "system_a_efficiencies",
+          "cold_water_source",
+          "system_a_utilisation_factor=None",
+          "system_b_efficiencies=None",
+          "system_b_utilisation_factor=None",
+          "system_c_efficiencies=None",
+          "system_c_utilisation_factor=None",
+          "system_b_efficiency_factor=None",
+          "system_c_efficiency_factor=None"
+        ],
+        "return": "None"
+      },
+      "methods": {
+        "calculate_performance": {
+          "parameters": [
+            "self",
+            "system_type",
+            "temp_target",
+            "flowrate_waste_water",
+            "volume_cold_water",
+            "temp_hot"
+          ],
+          "return": "None"
+        },
+        "draw_off_water": {
+          "parameters": [
+            "self",
+            "volume_needed: float"
+          ],
+          "return": "list[tuple[float, float]]"
+        },
+        "get_efficiency_from_flowrate": {
+          "parameters": [
+            "self",
+            "flowrate",
+            "system_type='A'"
+          ],
+          "return": "None"
+        },
+        "get_last_used_time": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        },
+        "get_temp_cold_water": {
+          "parameters": [
+            "self",
+            "volume_needed: float"
+          ],
+          "return": "list[tuple[float, float]]"
+        },
+        "register_preheated_volume": {
+          "parameters": [
+            "self",
+            "temperature: float",
+            "volume: float"
+          ],
+          "return": "None"
+        },
+        "set_last_used_time": {
+          "parameters": [
+            "self",
+            "time"
+          ],
+          "return": "None"
+        },
+        "timestep_end": {
+          "parameters": [
+            "self"
+          ],
+          "return": "None"
+        }
+      }
+    },
+    "WindowTreatmentControl": {
+      "type": "Enum",
+      "members": {
+        "AUTO_MOTORISED": "auto_motorised",
+        "COMBINED_LIGHT_BLIND_HVAC": "combined_light_blind_HVAC",
+        "MANUAL": "manual",
+        "MANUAL_MOTORISED": "manual_motorised"
+      }
+    }
+  },
+  "functions": {
+    "load_weather_data_from_file": {
+      "parameters": [
+        "epw_filename: pathlib.Path | None = None",
+        "cibse_weather_filename: pathlib.Path | None = None"
+      ],
+      "return": "None"
+    },
+    "run_project": {
+      "parameters": [
+        "project_dict: dict[str, typing.Any]",
+        "permissive_validation: bool = False",
+        "external_conditions_dict: dict[str, typing.Any] | None = None",
+        "heat_balance: bool = False",
+        "detailed_output_heating_cooling: bool = False",
+        "use_fast_solver: bool = True",
+        "tariff_data_filename: pathlib.Path | None = None",
+        "display_progress: bool = False"
+      ],
+      "return": "tuple[hem_core.input_output.input.Input, hem_core.input_output.output.Output]"
+    },
+    "write_project_outputs": {
+      "parameters": [
+        "output: hem_core.input_output.output.Output",
+        "project_name: str",
+        "project_input: hem_core.input_output.input.Input",
+        "output_path: pathlib.Path",
+        "output_formats: list[hem_core.hem.OutputFormat] | None",
+        "heat_balance: bool",
+        "detailed_output_heating_cooling: bool",
+        "output_file_run_name: str = 'core'"
+      ],
+      "return": "None"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+# Environment variables for pipelines.
+# Templates can not setup their own variables, so define them all here.
+---
+variables:
+  # uv settings
+  UV_LOCKED: 1  # Ensure all steps do not alter the uv.lock file.
+  UV_NO_MANAGED_PYTHON: 1  # We should use the system python in Azure pipelines.
+  UV_PYTHON_DOWNLOADS: never  # Don't use UV to manage python version on pipelines.
+  # Cache directories
+  UV_CACHE_DIR: $(Agent.TempDirectory)/cache/uv
+  PRE_COMMIT_HOME: $(Agent.TempDirectory)/cache/pre-commit

@@ -1,0 +1,200 @@
+[project]
+name = "hem-core"
+version = "1.0.0a7"
+description = """
+The Home Energy Model (HEM) is the UK Government’s proposed National Calculation Methodology
+for assessing the energy performance of dwellings.
+
+This package is the core building physics / energy model for HEM.
+"""
+license = "MIT"
+license-files = ["LICENCE.txt"]
+readme = "README.md"
+classifiers = [
+  # Classifier/labels for the PyPi public index:
+  # https://pypi.org/classifiers/
+  "Development Status :: 3 - Alpha",
+  # Prevent uv from uploading to pypi by default.
+  # We'll add a public build pipeline in due course.
+  "Private :: Do Not Upload",
+]
+requires-python = "==3.12.*"
+dependencies = [
+    "annotated-types>=0.7.0,<0.8.0",
+    "cython==3.1.2",
+    "jsonschema==4.23.0",
+    "matplotlib==3.9.3",
+    "numpy==2.1.0",
+    "pandas==2.2.3",
+    "pydantic==2.11.4",
+    "scipy==1.14.1",
+]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.9.1,<8.0.0",
+    "coverage-threshold>=0.6.2,<0.7.0",
+    "pre-commit>=4.2.0,<5",
+    "pyright>=1.1.402",
+    "pytest>=8.3.2,<9",
+    "pytest-cov>=6.2.0,<7.0.0",
+    "pytest-xdist>=3.7.0,<4.0.0",
+    "rich>=14.0.0,<15.0.0",
+    "ruff>=0.11.8,<1",
+    "scipy-stubs==1.16",
+    "typer>=0.16.0,<0.17.0",
+]
+
+[project.scripts]
+hem-core = "hem_core.hem:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+managed = true
+add-bounds = "major"
+prerelease = "explicit"
+required-version = ">=0.7.0"
+
+[tool.hatch.build]
+only-packages = true
+exclude = [
+  "test", "tools"
+]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+testpaths = [
+    "test/e2e",
+    "test/integration",
+    "test/unit_tests",
+]
+addopts = [
+    # xdist arguments
+    "--numprocesses", "auto",
+]
+
+[tool.coverage.run]
+source = [
+    "src/hem_core/",
+    "test/unit_tests/"  # Cover the unit tests themselves too, so we know they are fully running.
+]
+
+[tool.coverage.report]
+show_missing = true
+exclude_also = [
+    "@abstractmethod",
+    "@abc.abstractmethod",
+    "if TYPE_CHECKING:",
+    "if typing.TYPE_CHECKING:",
+]
+
+[tool.coverage-threshold]
+line_coverage_min = 87  # Overall line coverage.
+
+[tool.coverage-threshold.modules]
+# Standard coverage thresholds.
+"src/hem_core/" = { file_line_coverage_min = 100 }
+"test/unit_tests/" = { file_line_coverage_min = 100 }
+# Exceptions for uncovered complex core code.
+"src/hem_core/hem.py" = { file_line_coverage_min = 0 }
+"src/hem_core/project.py" = { file_line_coverage_min = 0 }
+# Temporary exceptions which we should increase coverage for.
+"src/hem_core/input_output/read_CIBSE_weather_file.py" = { file_line_coverage_min = 0 }
+"src/hem_core/input_output/read_weather_file.py" = { file_line_coverage_min = 0 }
+"src/hem_core/log_config.py" = { file_line_coverage_min = 0 }
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+target-version = "py312"
+exclude = [
+    # Exclude .git directory from ruff checks, some branches end in .py and ruff thinks
+    # the .git/refs/ are python files...
+    ".git/",
+    # Ruff automaticlly ignores any files/directories in .gitignore by default.
+
+    # Verbose list of existing files.
+    # As we fix linting issues, delete each file from this list until we have no more ignores.
+    "./src/hem_core/cooling_systems/air_conditioning.py",
+    "./test/batch_running_tool/post_processing/QA_output_format.py",
+    "./test/batch_running_tool/post_processing/af_colours.py",
+    "./test/batch_running_tool/post_processing/collect_impact_assessment_results.py",
+    "./test/batch_running_tool/post_processing/format_dates.py",
+    "./test/batch_running_tool/post_processing/impact_assessment_figures.py",
+    "./test/batch_running_tool/post_processing/post_processing_tools.py",
+    "./test/batch_running_tool/post_processing/reformat_data.py",
+    "./test/batch_running_tool/post_processing/reformat_data_historic_results.py",
+    "./test/batch_running_tool/post_processing/statistical_analysis.py",
+    "./test/batch_running_tool/batch_tool.py",
+    "./test/unit_tests/hem_core/energy_supply/test_tariff_data.py",
+    "./tools/add_min_temp_and_setpoint_temps.py",
+    "./tools/add_water_heater_and_thermostat_positions.py",
+    "./tools/add_weather_comp_curve.py",
+    "./tools/convert_input_file_zone_setpoints_to_schedules.py",
+]
+
+[tool.ruff.lint]
+# Add flake8-bugbear (`B`) rules, in addition to the defaults. Add (`I`) for sorting imports.
+extend-select = ["B","I"]
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# Like Black
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "native"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"  # Matches uv's default venv path, don't use your own venv path.
+typeCheckingMode = "standard"
+reportImportCycles = true
+reportUnnecessaryTypeIgnoreComment = "error"
+reportShadowedImports = "warning"
+include = [
+  "src/",
+  "test/",
+  "tools/",
+]
+exclude = [
+  "build_directory/",
+  "dist/",
+  "setup.py",
+    # Verbose list of existing files.
+    # As we fix type-hinting in each file, delete it from this list until we have no more ignores.
+  "./src/hem_core/heating_systems/emitters.py",
+  "./src/hem_core/heating_systems/wwhrs.py",
+  "./src/hem_core/space_heat_demand/zone.py",
+  "./src/hem_core/project.py",
+  "./src/hem_core/schema_utils.py",
+  "./test/batch_running_tool/post_processing/QA_output_format.py",
+  "./test/batch_running_tool/post_processing/af_colours.py",
+  "./test/batch_running_tool/post_processing/collect_impact_assessment_results.py",
+  "./test/batch_running_tool/post_processing/format_dates.py",
+  "./test/batch_running_tool/post_processing/impact_assessment_figures.py",
+  "./test/batch_running_tool/post_processing/post_processing_tools.py",
+  "./test/batch_running_tool/post_processing/reformat_data.py",
+  "./test/batch_running_tool/post_processing/reformat_data_historic_results.py",
+  "./test/batch_running_tool/post_processing/statistical_analysis.py",
+  "./test/batch_running_tool/batch_tool.py",
+  "./test/unit_tests/hem_core/energy_supply/test_pv.py",
+  "./test/unit_tests/hem_core/heating_systems/test_boiler.py",
+  "./test/unit_tests/hem_core/heating_systems/test_emitters.py",
+  "./test/unit_tests/hem_core/input_output/test_input.py",
+  "./test/unit_tests/hem_core/space_heat_demand/test_building_element.py",
+  "./test/unit_tests/hem_core/space_heat_demand/test_internal_gains.py",
+  "./test/unit_tests/hem_core/test_pipework.py",
+  "./tools/add_min_temp_and_setpoint_temps.py",
+  "./tools/add_water_heater_and_thermostat_positions.py",
+  "./tools/add_weather_comp_curve.py",
+  "./tools/convert_input_file_zone_setpoints_to_schedules.py",
+]

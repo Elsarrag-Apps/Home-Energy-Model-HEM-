@@ -1,0 +1,13 @@
+commit_id,test_suite_id,chronology,date,description
+b01f46ac,HEM_V028_FHS_V019,2,2024-03-01,Last consultation version (HEM v0.28) Includes: WWHRS fix and PV solar fix
+e18a1051,HEM_PRE_VENT,5,2024-05-17,HEM version just before the ventilation module is introduced
+16fda233,HEM_POST_VENT,6,2024-06-14,Post ventilation module
+HEM_DLUHC,HEM_DLUHC,4,2024-06-04,HEM commit id: 334e5a38
+HEM_DLUHC_LT,HEM_DLUHC_LT,5,2024-06-03,"HEM commit id: 334e5a38, FHS v0.19, lighting from FHS v0.21"
+HEM_DLUHC_LT_HWC,HEM_DLUHC_LT_HWC,6,2024-06-03,"HEM commit id: 334e5a38, FHS v0.19, lighting, cylinder controls from FHS v0.21"
+HEM_DLUHC_LT_HWC_HW,HEM_DLUHC_LT_HWC_HW,7,2024-06-03,"HEM commit id: 334e5a38, FHS v0.19 and lighting, cylinder controls, hot water demand schedule from FHS v0.21"
+HEM_DLUHC_LT_HWC_HW_CW,HEM_DLUHC_LT_HWC_HW_CW,8,2024-06-03,"HEM commit id: 334e5a38, FHS v0.19 and lighting, cylinder controls, hot water demand schedule, cold water evaoprative losses from FHS v0.21"
+HEM_DLUHC_LT_HWC_HW_CW_MET,HEM_DLUHC_LT_HWC_HW_CW_MET,9,2024-06-03,"HEM commit id: 334e5a38, FHS v0.19 and lighting, cylinder controls, hot water demand schedule, cold water evaoprative losses, metabolic gains from FHS v0.21"
+HEM_DLUHC_LT_HWC_HW_CW_MET_APP_S,HEM_DLUHC_LT_HWC_HW_CW_MET_APP_S,10,2024-06-03,"HEM commit id: 334e5a38, FHS v0.19 and lighting, cylinder controls, hot water demand schedule, cold water evaoprative losses, metabolic gains, appliances small load from FHS v0.21"
+HEM_DLUHC_LT_HWC_HW_CW_MET_APP_M,HEM_DLUHC_LT_HWC_HW_CW_MET_APP_M,11,2024-06-03,"HEM commit id: 334e5a38, FHS v0.19 and lighting, cylinder controls, hot water demand schedule, cold water evaoprative losses, metabolic gains, appliances medium load from FHS v0.21"
+HEM_DLUHC_LT_HWC_HW_CW_MET_APP_L,HEM_DLUHC_LT_HWC_HW_CW_MET_APP_L,12,2024-06-03,"HEM commit id: 334e5a38, FHS v0.19 and lighting, cylinder controls, hot water demand schedule, cold water evaoprative losses, metabolic gains, appliances large load from FHS v0.21"

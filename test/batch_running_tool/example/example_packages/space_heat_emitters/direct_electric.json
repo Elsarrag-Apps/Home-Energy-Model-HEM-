@@ -1,0 +1,20 @@
+{
+    "SpaceHeatSystem": {
+        "heating system zone 1": {
+            "Control": "HeatingPattern_LivingRoom",
+            "EnergySupply": "mains elec",
+            "Zone": "zone 1",
+            "frac_convective": 0.95,
+            "rated_power": 5.0,
+            "type": "InstantElecHeater"
+        },
+        "heating system zone 2": {
+            "Control": "HeatingPattern_RestOfDwelling",
+            "EnergySupply": "mains elec",
+            "Zone": "zone 2",
+            "frac_convective": 0.95,
+            "rated_power": 15.0,
+            "type": "InstantElecHeater"
+        }
+    }
+}

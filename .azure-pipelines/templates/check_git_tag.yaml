@@ -1,0 +1,19 @@
+# Check that we're on a git tagged version.
+# Build pipelines should _NOT_ be run against un-tagged versions.
+---
+steps:
+  # Check that the current source version has a git tag.
+  - script: |
+      HEM_VERSION=`uv version --short`
+      HEAD_TAG=`git tag --points-at HEAD`
+      if [ -z "$HEAD_TAG" ]; then
+        echo "❌ Git HEAD is not tagged. Build pipelines should only be run against a git tag."
+        exit 1
+      fi
+      if [[ "$HEM_VERSION" != "$HEAD_TAG" ]]; then
+        echo "❌ Git HEAD is tagged (${HEAD_TAG}), but tag does not match package version (${HEM_VERSION})."
+        exit 1
+      fi
+      echo "✔ Git tag OK"
+      exit 0
+    displayName: Check git tag

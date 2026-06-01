@@ -1,0 +1,37 @@
+{
+        "OnSiteGeneration": {
+            "PV 1": {
+                "EnergySupply": "mains elec",
+                "orientation360": 180,
+                "peak_power": 1.0,
+                "pitch": 37.5,
+                "type": "PhotovoltaicSystem",
+                "ventilation_strategy": "moderately_ventilated",
+                "height":1.5,
+                "width":3.0,
+                "base_height": 5.564,
+                "shading": [],
+                "inverter_peak_power_dc": 2,
+                "inverter_peak_power_ac": 1.4,
+                "inverter_is_inside": false,
+			    "inverter_type": "optimised_inverter"
+            },
+            "PV 2": {
+                "EnergySupply": "mains elec",
+                "orientation360": 180,
+                "peak_power": 1.0,
+                "pitch": 37.5,
+                "type": "PhotovoltaicSystem",
+                "ventilation_strategy": "moderately_ventilated",
+                "height":1.5,
+                "width":3.0,
+                "base_height": 5.564,
+                "shading": [],
+                "inverter_peak_power_dc": 2,
+                "inverter_peak_power_ac": 1.4,
+                "inverter_is_inside": false,
+			    "inverter_type": "optimised_inverter"
+            }
+        }
+    }
+

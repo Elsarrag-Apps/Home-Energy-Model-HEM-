@@ -1,0 +1,46 @@
+# Continuous Integration
+# Run linting checks and unit tests on every PR.
+---
+trigger:
+  - main  # Azure handles triggering for PRs through it's UI, so just trigger CI against main for now.
+
+jobs:
+  - job: CI
+    timeoutInMinutes: 30  # Much longer than a typical run, but shorter than ADO's default
+    strategy:
+      matrix:
+        Python312-Ubuntu2404:
+          python.version: '3.12'
+          vmImage: 'ubuntu-24.04'
+          # We only need one test coverage report, so long as all tests pass without error.
+          report_test_coverage: true
+        Python312-Win11:
+          python.version: '3.12'
+          vmImage: 'windows-2022'
+          report_test_coverage: false
+    pool:
+      vmImage: $(vmImage)
+    variables:
+      - template: templates/environment_variables.yaml
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(python.version)'
+        displayName: Use Python $(python.version)
+
+      - template: templates/install_dependencies.yaml
+
+      - template: templates/linting.yaml
+
+      - template: templates/tests.yaml
+        parameters:
+          end_to_end: true
+          # ADO strategy matrix variables are only resolved at runtime, while templates are compiled up-front to copy
+          # in the template content. So we can't pass the matrix variable report_test_coverage directly into the template
+          # parameter. Instead, we and() the two together in the template.
+          coverage: true
+
+      - script: |
+          uv build
+        displayName: Build (check)
+        # Check the package will build (but don't publish it yet)

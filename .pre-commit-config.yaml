@@ -1,0 +1,75 @@
+default_install_hook_types:
+  - pre-commit
+  - pre-merge-commit
+  - pre-rebase
+  - pre-push
+  - post-checkout
+  - post-merge
+  - post-rewrite
+default_language_version:
+  python: python3.12
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-illegal-windows-names
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: debug-statements
+      - id: check-toml
+      - id: check-yaml
+      - id: destroyed-symlinks
+      - id: no-commit-to-branch
+        args: [ --branch, main ]
+        stages: [pre-commit, pre-merge-commit]
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.7.11
+    hooks:
+      - id: uv-lock
+        args: [--check]  # Check only, don't alter the lock file
+      - id: uv-sync
+        name: "uv sync: automatically sync on checkout"
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.8
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
+
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.400
+    hooks:
+      - id: pyright
+
+  - repo: local
+    hooks:
+      - id: check-float-comparisons
+        name: Check for direct float comparisons with 0.0
+        entry: python tools/check_float_compare.py
+        language: python
+        types: [python]
+        pass_filenames: true
+      - id: integration-tests
+        name: Integration tests
+        language: system
+        entry: uv run pytest -vvv test/integration/
+        pass_filenames: false
+        stages: [pre-push]
+      - id: unit-tests
+        name: Unit tests
+        language: system
+        entry: uv run pytest test/unit_tests/ --cov --cov-report=json
+        pass_filenames: false
+        stages: [pre-push]
+      - id: coverage-threshold
+        name: Coverage threshold
+        language: system
+        entry: uv run coverage-threshold
+        pass_filenames: false
+        stages: [pre-push]
