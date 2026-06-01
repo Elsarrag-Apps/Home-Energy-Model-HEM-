@@ -43,3 +43,5 @@ test-output.xml
 
 # Ignore jupyter notebook checkpoint files
 /**/.ipynb_checkpoints/
+
+ui/temp/
