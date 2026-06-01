@@ -9,7 +9,11 @@ UI_DIR = CURRENT_DIR.parent
 UTILS_DIR = UI_DIR / "utils"
 sys.path.append(str(UTILS_DIR))
 
-from input_builder import build_generated_fabric_input
+from input_builder import (
+    build_generated_fabric_input,
+    get_zone_building_elements,
+    summarise_building_elements_for_table,
+)
 from model_runner import run_hem_model
 from results_parser import compare_summary_metrics, format_number
 
@@ -98,7 +102,50 @@ st.info(
     "Base HEM case: test/e2e/demo_files/short/demo.json. "
     "This page replaces Zone -> zone 1 -> BuildingElement."
 )
+st.header("Existing HEM fabric elements")
 
+try:
+    existing_elements = get_zone_building_elements(BASE_JSON_PATH, zone_name="zone 1")
+    existing_table = summarise_building_elements_for_table(existing_elements)
+
+    st.write(
+        "These are the current BuildingElement entries in the base HEM file. "
+        "Use them as a reference before deciding whether to replace all elements "
+        "or add new UI elements to the existing model."
+    )
+
+    st.dataframe(
+        existing_table,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+except Exception as exc:
+    st.warning("Could not load existing HEM BuildingElement data.")
+    st.exception(exc)
+
+
+st.header("Fabric update mode")
+
+fabric_update_mode = st.radio(
+    "How should the generated HEM file handle existing fabric elements?",
+    [
+        "Add new UI elements to existing HEM elements",
+        "Replace all existing elements",
+    ],
+    index=0,
+)
+
+if fabric_update_mode == "Add new UI elements to existing HEM elements":
+    st.info(
+        "Safer mode: the generated file keeps the existing HEM elements and adds "
+        "the new elements you enter below."
+    )
+else:
+    st.warning(
+        "Replace mode: the generated file will replace all existing BuildingElement "
+        "entries in zone 1 with the elements you enter below."
+    )
 
 st.header("1. Add fabric element")
 
@@ -444,6 +491,7 @@ else:
                 output_json_path=GENERATED_FABRIC_INPUT_PATH,
                 fabric_elements=st.session_state["fabric_elements"],
                 zone_name="zone 1",
+                update_mode=fabric_update_mode,
             )
 
             st.session_state["generated_fabric_input_ready"] = True

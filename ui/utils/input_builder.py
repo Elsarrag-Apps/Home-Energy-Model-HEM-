@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -43,8 +44,6 @@ MECHANICAL_TYPE_TO_HEM = {
 
 
 MASS_CLASS_TO_HEM = {
-    "External": "I",
-    "Internal": "I",
     "Lightweight": "D",
     "Medium": "I",
     "Heavy": "I",
@@ -60,14 +59,48 @@ def load_base_hem_json(base_json_path: Path) -> dict:
 
 
 def u_value_to_resistance(u_value: float) -> float:
-    """Convert a UI U-value to a simple thermal resistance.
-
-    This is a first-pass mapping for HEM input generation. Later, if needed,
-    this can be refined to account for HEM's surface resistance convention.
-    """
+    """Convert a UI U-value to a simple thermal resistance."""
     if u_value <= 0:
         raise ValueError("U-value must be greater than zero.")
     return 1.0 / u_value
+
+
+def get_zone_building_elements(base_json_path: Path, zone_name: str = "zone 1") -> dict:
+    """Return the existing HEM BuildingElement dictionary for a zone."""
+    hem_input = load_base_hem_json(base_json_path)
+
+    if "Zone" not in hem_input:
+        raise KeyError("Base HEM input does not contain a Zone section.")
+
+    if zone_name not in hem_input["Zone"]:
+        raise KeyError(f"Zone '{zone_name}' not found in base HEM input.")
+
+    return hem_input["Zone"][zone_name].get("BuildingElement", {})
+
+
+def summarise_building_elements_for_table(building_elements: dict) -> list[dict]:
+    """Flatten HEM BuildingElement entries into table-friendly rows."""
+    rows = []
+
+    for name, element in building_elements.items():
+        rows.append(
+            {
+                "name": name,
+                "type": element.get("type"),
+                "area": element.get("area", element.get("total_area")),
+                "u_value": element.get("u_value"),
+                "thermal_resistance_construction": element.get(
+                    "thermal_resistance_construction"
+                ),
+                "solar_absorption_coeff": element.get("solar_absorption_coeff"),
+                "g_value": element.get("g_value"),
+                "pitch": element.get("pitch"),
+                "orientation360": element.get("orientation360"),
+                "mass_distribution_class": element.get("mass_distribution_class"),
+            }
+        )
+
+    return rows
 
 
 def build_hem_infiltration_ventilation(
@@ -204,16 +237,35 @@ def build_generated_hem_input(
     return hem_input
 
 
-def build_hem_building_elements(fabric_elements: list) -> dict:
-    """Build HEM Zone -> BuildingElement dictionary from UI fabric inputs."""
+def _count_existing_prefixes(existing_elements: dict) -> dict:
+    counters = {
+        "wall": 0,
+        "roof": 0,
+        "window": 0,
+        "ground": 0,
+    }
+
+    for name in existing_elements:
+        for prefix in counters:
+            if name.startswith(prefix):
+                counters[prefix] += 1
+
+    return counters
+
+
+def build_hem_building_elements(
+    fabric_elements: list,
+    existing_elements: dict | None = None,
+) -> dict:
+    """Build HEM BuildingElement dictionary from UI fabric inputs."""
 
     building_elements = {}
+    counters = _count_existing_prefixes(existing_elements or {})
 
-    wall_count = 0
-    roof_count = 0
-    window_count = 0
-    party_wall_count = 0
-    ground_count = 0
+    wall_count = counters["wall"]
+    roof_count = counters["roof"]
+    window_count = counters["window"]
+    ground_count = counters["ground"]
 
     for element in fabric_elements:
         element_type = element["type"]
@@ -303,8 +355,6 @@ def build_hem_building_elements(fabric_elements: list) -> dict:
             name = "ground" if ground_count == 0 else f"ground {ground_count}"
             ground_count += 1
 
-            perimeter = float(element.get("perimeter_m") or 28.0)
-
             building_elements[name] = {
                 "type": "BuildingElementGround",
                 "total_area": area,
@@ -316,13 +366,13 @@ def build_hem_building_elements(fabric_elements: list) -> dict:
                 "mass_distribution_class": mass_class,
                 "floor_type": element.get("floor_type") or "Slab_no_edge_insulation",
                 "thickness_walls": float(element.get("thickness_walls_m") or 0.1705),
-                "perimeter": perimeter,
+                "perimeter": float(element.get("perimeter_m") or 28.0),
                 "psi_wall_floor_junc": float(element.get("psi_wall_floor_junc") or 0.0),
             }
 
         elif element_type == "Party wall":
-            name = f"wall {wall_count + party_wall_count}"
-            party_wall_count += 1
+            name = f"wall {wall_count}"
+            wall_count += 1
 
             building_elements[name] = {
                 "type": "BuildingElementPartyWall",
@@ -336,7 +386,6 @@ def build_hem_building_elements(fabric_elements: list) -> dict:
             }
 
         else:
-            # Skip unsupported element types in the first HEM-connected fabric pass.
             continue
 
     return building_elements
@@ -347,8 +396,9 @@ def build_generated_fabric_input(
     output_json_path: Path,
     fabric_elements: list,
     zone_name: str = "zone 1",
+    update_mode: str = "Replace all existing elements",
 ) -> dict:
-    """Load base HEM JSON, replace Zone -> BuildingElement, and save new JSON."""
+    """Load base HEM JSON, update Zone -> BuildingElement, and save new JSON."""
 
     hem_input = load_base_hem_json(base_json_path)
 
@@ -358,21 +408,34 @@ def build_generated_fabric_input(
     if zone_name not in hem_input["Zone"]:
         raise KeyError(f"Zone '{zone_name}' not found in base HEM input.")
 
-    building_elements = build_hem_building_elements(fabric_elements)
+    existing_elements = hem_input["Zone"][zone_name].get("BuildingElement", {})
 
-    if not building_elements:
+    if update_mode == "Add new UI elements to existing HEM elements":
+        updated_elements = deepcopy(existing_elements)
+        new_elements = build_hem_building_elements(
+            fabric_elements,
+            existing_elements=existing_elements,
+        )
+        updated_elements.update(new_elements)
+
+    elif update_mode == "Replace all existing elements":
+        updated_elements = build_hem_building_elements(fabric_elements)
+
+    else:
+        raise ValueError(f"Unsupported fabric update mode: {update_mode}")
+
+    if not updated_elements:
         raise ValueError("No supported fabric elements were provided.")
 
-    hem_input["Zone"][zone_name]["BuildingElement"] = building_elements
+    hem_input["Zone"][zone_name]["BuildingElement"] = updated_elements
 
-    # Update zone area and volume roughly from ground/floor area if available.
     floor_areas = [
         float(element["area_m2"])
         for element in fabric_elements
         if element["type"] == "Ground floor"
     ]
 
-    if floor_areas:
+    if floor_areas and update_mode == "Replace all existing elements":
         floor_area = sum(floor_areas)
         hem_input["Zone"][zone_name]["area"] = floor_area
         hem_input["Zone"][zone_name]["volume"] = floor_area * 2.7
