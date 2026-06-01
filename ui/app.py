@@ -4,126 +4,135 @@ from pathlib import Path
 
 import streamlit as st
 
-# Allow imports from ui/utils
 CURRENT_DIR = Path(__file__).resolve().parent
 UTILS_DIR = CURRENT_DIR / "utils"
 sys.path.append(str(UTILS_DIR))
 
-from model_runner import run_hem_model
-from results_parser import format_number, read_summary_metrics
+from project_store import (
+    clear_active_project,
+    get_active_project,
+    load_json_as_project,
+    save_current_project_to_file,
+    start_blank_project,
+)
 
 
 st.set_page_config(
     page_title="Home Energy Model Desktop App",
-    layout="wide"
+    layout="wide",
 )
 
 st.title("Home Energy Model Desktop App")
 
 st.write(
-    "Upload a HEM input JSON file, run the HEM engine locally, "
-    "and review the result summary."
+    "Load an existing HEM JSON case, load a saved app project JSON, "
+    "or start a blank project and enter inputs manually."
 )
 
-TEMP_DIR = Path("ui/temp")
-TEMP_DIR.mkdir(parents=True, exist_ok=True)
-
-input_path = TEMP_DIR / "hem_input.json"
-results_dir = TEMP_DIR / "hem_input__results"
-summary_path = results_dir / "hem_input__core__results_summary.csv"
-
-weather_file = Path("test/e2e/demo_files/London_weather_CIBSE_format.csv")
-
-
-st.sidebar.title("HEM Controls")
-st.sidebar.info("Upload a HEM input JSON file, then run the model locally.")
+st.header("1. Upload / Load JSON")
 
 uploaded_file = st.file_uploader(
-    "Upload HEM input JSON",
-    type=["json"]
+    "Upload HEM input JSON or saved app project JSON",
+    type=["json"],
 )
 
-if uploaded_file is None:
-    st.warning("Please upload a HEM input JSON file to begin.")
-else:
-    try:
-        input_data = json.load(uploaded_file)
+if uploaded_file is not None:
+    if st.button("Load uploaded JSON"):
+        try:
+            file_type, project_data = load_json_as_project(
+                uploaded_file,
+                source_name=uploaded_file.name,
+            )
 
-        st.success("Input JSON loaded successfully.")
-
-        with open(input_path, "w", encoding="utf-8") as f:
-            json.dump(input_data, f, indent=2)
-
-        st.info(f"Temporary input saved to: {input_path}")
-
-        with st.expander("Preview uploaded JSON", expanded=False):
-            st.json(input_data)
-
-        st.subheader("Run HEM model")
-
-        if st.button("Run HEM model"):
-            with st.spinner("Running HEM model..."):
-                result = run_hem_model(input_path, weather_file)
-
-            if result.returncode == 0:
-                st.success("HEM model completed successfully.")
-
-                if summary_path.exists():
-                    st.subheader("HEM Results Dashboard")
-
-                    metrics = read_summary_metrics(summary_path)
-
-                    col1, col2, col3 = st.columns(3)
-
-                    with col1:
-                        metric = metrics.get("Space heat demand")
-                        if metric:
-                            st.metric(
-                                "Space heat demand",
-                                f"{format_number(metric['value'])} {metric['unit']}",
-                            )
-
-                    with col2:
-                        metric = metrics.get("Space cool demand")
-                        if metric:
-                            st.metric(
-                                "Space cool demand",
-                                f"{format_number(metric['value'])} {metric['unit']}",
-                            )
-
-                    with col3:
-                        metric = metrics.get("Peak electricity consumption")
-                        if metric:
-                            st.metric(
-                                "Peak electricity consumption",
-                                f"{format_number(metric['value'])} {metric['unit']}",
-                            )
-
-                    summary_text = summary_path.read_text(encoding="utf-8")
-
-                    with st.expander("View full summary CSV", expanded=True):
-                        st.text(summary_text)
-
-                    st.download_button(
-                        label="Download summary CSV",
-                        data=summary_text,
-                        file_name="hem_input__core__results_summary.csv",
-                        mime="text/csv",
-                    )
-
-                else:
-                    st.warning(
-                        "The model ran, but the expected summary CSV was not found."
-                    )
-
+            if file_type == "hem_input":
+                st.success("Loaded uploaded file as a HEM input template.")
             else:
-                st.error("HEM model failed.")
-                st.subheader("Error output")
-                st.code(result.stderr)
+                st.success("Loaded uploaded file as a saved app project.")
 
-                if result.stdout:
-                    st.subheader("Model output")
-                    st.code(result.stdout)
+        except Exception as exc:
+            st.error("Could not load uploaded JSON.")
+            st.exception(exc)
 
-    except json.JSONDecodeError:
-        st.error("The uploaded file is not valid JSON.")
+
+st.header("2. Start blank project")
+
+if st.button("Start blank project"):
+    start_blank_project()
+    st.success("Blank project started.")
+
+
+st.header("3. Active project status")
+
+active_project = get_active_project()
+
+if active_project is None:
+    st.warning("No active project loaded yet.")
+else:
+    project_type = active_project.get("project_type", "unknown")
+    hem_source = active_project.get("active_hem_source")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Project type", project_type)
+
+    with col2:
+        st.metric("HEM source", hem_source or "None")
+
+    with col3:
+        has_hem_input = "hem_input" in active_project
+        st.metric("HEM template loaded", "Yes" if has_hem_input else "No")
+
+    if "hem_input" in active_project:
+        hem_input = active_project["hem_input"]
+
+        detected_sections = [
+            section
+            for section in [
+                "SimulationTime",
+                "ExternalConditions",
+                "Zone",
+                "InfiltrationVentilation",
+                "EnergySupply",
+                "SpaceHeatSystem",
+                "HotWaterSource",
+                "HotWaterDemand",
+            ]
+            if section in hem_input
+        ]
+
+        st.info(
+            "HEM input loaded. Detected sections: "
+            + ", ".join(detected_sections)
+        )
+
+    with st.expander("Developer/debug: view active project JSON", expanded=False):
+        st.json(active_project)
+
+
+st.header("4. Save / clear project")
+
+if active_project is not None:
+    save_path = Path("ui/temp/saved_app_project.json")
+
+    project_json = json.dumps(active_project, indent=2)
+
+    st.download_button(
+        label="Download current app project JSON",
+        data=project_json,
+        file_name="saved_app_project.json",
+        mime="application/json",
+    )
+
+    if st.button("Save current project locally"):
+        try:
+            output_path = save_current_project_to_file(save_path)
+            st.success(f"Project saved locally to: {output_path}")
+        except Exception as exc:
+            st.error("Could not save project.")
+            st.exception(exc)
+
+    if st.button("Clear active project"):
+        clear_active_project()
+        st.success("Active project cleared.")
+        st.rerun()
