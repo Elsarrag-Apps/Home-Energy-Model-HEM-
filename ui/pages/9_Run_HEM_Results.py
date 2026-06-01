@@ -68,8 +68,9 @@ weather_settings = project_data.get("weather_simulation", {})
 space_heat_systems = project_data.get("space_heat_systems", {})
 hot_water = project_data.get("hot_water", {})
 gains_controls = project_data.get("gains_controls", {})
+energy_supply = project_data.get("energy_supply", {})
 
-col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
 
 with col1:
     st.metric("Fabric rows", len(fabric_rows))
@@ -96,6 +97,9 @@ with col6:
     st.metric("Gains/controls", "Yes" if gains_controls else "No")
 
 with col7:
+    st.metric("Energy supply", "Yes" if energy_supply else "No")
+
+with col8:
     st.metric(
         "Weather",
         "Yes" if weather_settings.get("weather_file") else "Default",

@@ -104,6 +104,7 @@ def validate_json_sections(project_data: dict) -> list[dict]:
         "space_heat_systems": "Heating systems",
         "hot_water": "Hot water",
         "gains_controls": "Internal gains, controls and events",
+        "energy_supply": "Energy supply",
     }
 
     for key, label in section_checks.items():

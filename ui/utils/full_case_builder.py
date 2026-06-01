@@ -318,6 +318,13 @@ def apply_gains_controls_to_case(hem_input: dict, gains_controls: dict) -> dict:
     return hem_input
 
 
+def apply_energy_supply_to_case(hem_input: dict, energy_supply: dict) -> dict:
+    if isinstance(energy_supply, dict) and energy_supply:
+        hem_input["EnergySupply"] = deepcopy(energy_supply)
+
+    return hem_input
+
+
 def build_full_project_case(
     base_json_path: Path,
     output_json_path: Path,
@@ -337,6 +344,7 @@ def build_full_project_case(
     space_heat_systems = project_sections.get("space_heat_systems", {})
     hot_water_sections = project_sections.get("hot_water", {})
     gains_controls = project_sections.get("gains_controls", {})
+    energy_supply = project_sections.get("energy_supply", {})
 
     hem_input = apply_fabric_to_case(
         hem_input=hem_input,
@@ -369,6 +377,11 @@ def build_full_project_case(
     hem_input = apply_gains_controls_to_case(
         hem_input=hem_input,
         gains_controls=gains_controls,
+    )
+
+    hem_input = apply_energy_supply_to_case(
+        hem_input=hem_input,
+        energy_supply=energy_supply,
     )
 
     save_json(output_json_path, hem_input)
