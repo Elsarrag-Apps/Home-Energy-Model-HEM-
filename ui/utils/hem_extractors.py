@@ -317,6 +317,31 @@ def summarise_hot_water_sections(hot_water_sections: dict) -> dict:
     }
 
 
+def extract_gains_controls_sections_from_hem(hem_json_path: Path) -> dict:
+    hem_input = load_json_file(hem_json_path)
+
+    return {
+        "InternalGains": hem_input.get("InternalGains", {}),
+        "ApplianceGains": hem_input.get("ApplianceGains", {}),
+        "Events": hem_input.get("Events", {}),
+        "Control": hem_input.get("Control", {}),
+    }
+
+
+def summarise_gains_controls_sections(sections: dict) -> dict:
+    internal = sections.get("InternalGains", {})
+    appliance = sections.get("ApplianceGains", {})
+    events = sections.get("Events", {})
+    controls = sections.get("Control", {})
+
+    return {
+        "internal_gain_count": len(internal) if isinstance(internal, dict) else 0,
+        "appliance_gain_count": len(appliance) if isinstance(appliance, dict) else 0,
+        "event_count": len(events) if isinstance(events, dict) else 0,
+        "control_count": len(controls) if isinstance(controls, dict) else 0,
+    }
+
+
 def summarise_active_hem_case(hem_json_path: Path) -> dict:
     hem_input = load_json_file(hem_json_path)
 
@@ -325,6 +350,10 @@ def summarise_active_hem_case(hem_json_path: Path) -> dict:
     space_heat = hem_input.get("SpaceHeatSystem", {})
     hot_water_source = hem_input.get("HotWaterSource", {})
     hot_water_demand = hem_input.get("HotWaterDemand", {})
+    internal_gains = hem_input.get("InternalGains", {})
+    appliance_gains = hem_input.get("ApplianceGains", {})
+    events = hem_input.get("Events", {})
+    controls = hem_input.get("Control", {})
 
     fabric_counts = {
         "opaque": 0,
@@ -354,5 +383,9 @@ def summarise_active_hem_case(hem_json_path: Path) -> dict:
         "space_heating_system_count": len(space_heat),
         "hot_water_source_count": len(hot_water_source),
         "hot_water_demand_count": len(hot_water_demand),
+        "internal_gain_count": len(internal_gains),
+        "appliance_gain_count": len(appliance_gains),
+        "event_count": len(events),
+        "control_count": len(controls),
         "fabric_counts": fabric_counts,
     }

@@ -305,6 +305,19 @@ def apply_hot_water_to_case(hem_input: dict, hot_water_sections: dict) -> dict:
     return hem_input
 
 
+def apply_gains_controls_to_case(hem_input: dict, gains_controls: dict) -> dict:
+    if not isinstance(gains_controls, dict):
+        return hem_input
+
+    for section_name in ["InternalGains", "ApplianceGains", "Events", "Control"]:
+        section_value = gains_controls.get(section_name)
+
+        if isinstance(section_value, dict):
+            hem_input[section_name] = deepcopy(section_value)
+
+    return hem_input
+
+
 def build_full_project_case(
     base_json_path: Path,
     output_json_path: Path,
@@ -323,6 +336,7 @@ def build_full_project_case(
     thermal_bridges = project_sections.get("thermal_bridges", [])
     space_heat_systems = project_sections.get("space_heat_systems", {})
     hot_water_sections = project_sections.get("hot_water", {})
+    gains_controls = project_sections.get("gains_controls", {})
 
     hem_input = apply_fabric_to_case(
         hem_input=hem_input,
@@ -350,6 +364,11 @@ def build_full_project_case(
     hem_input = apply_hot_water_to_case(
         hem_input=hem_input,
         hot_water_sections=hot_water_sections,
+    )
+
+    hem_input = apply_gains_controls_to_case(
+        hem_input=hem_input,
+        gains_controls=gains_controls,
     )
 
     save_json(output_json_path, hem_input)

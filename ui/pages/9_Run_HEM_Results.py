@@ -12,6 +12,11 @@ sys.path.append(str(UTILS_DIR))
 from full_case_builder import build_full_project_case
 from model_runner import run_hem_model
 from project_store import ACTIVE_HEM_INPUT_PATH, get_active_project
+from project_validation import (
+    has_blocking_errors,
+    split_messages,
+    validate_project_before_run,
+)
 from results_parser import compare_summary_metrics, format_number
 
 
@@ -62,8 +67,9 @@ thermal_bridges = project_data.get("thermal_bridges", [])
 weather_settings = project_data.get("weather_simulation", {})
 space_heat_systems = project_data.get("space_heat_systems", {})
 hot_water = project_data.get("hot_water", {})
+gains_controls = project_data.get("gains_controls", {})
 
-col1, col2, col3, col4, col5, col6 = st.columns(6)
+col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
 with col1:
     st.metric("Fabric rows", len(fabric_rows))
@@ -79,23 +85,49 @@ with col3:
 
 with col4:
     st.metric(
-        "Heating systems",
+        "Heating",
         len(space_heat_systems) if isinstance(space_heat_systems, dict) else 0,
     )
 
 with col5:
-    st.metric(
-        "Hot water",
-        "Yes" if hot_water else "No",
-    )
+    st.metric("Hot water", "Yes" if hot_water else "No")
 
 with col6:
+    st.metric("Gains/controls", "Yes" if gains_controls else "No")
+
+with col7:
     st.metric(
         "Weather",
         "Yes" if weather_settings.get("weather_file") else "Default",
     )
 
-st.header("2. Weather used for this run")
+st.header("2. Pre-run checks")
+
+validation_messages = validate_project_before_run(
+    project_data=project_data,
+    default_weather_file=DEFAULT_WEATHER_FILE,
+)
+
+validation_errors, validation_warnings = split_messages(validation_messages)
+
+if not validation_messages:
+    st.success("Pre-run checks passed.")
+else:
+    if validation_errors:
+        st.error("Some inputs need attention before HEM can run.")
+
+        for message in validation_errors:
+            st.warning(f"{message['section']}: {message['message']}")
+
+    if validation_warnings:
+        st.info("Warnings / notes:")
+
+        for message in validation_warnings:
+            st.caption(f"{message['section']}: {message['message']}")
+
+blocking_errors = has_blocking_errors(validation_messages)
+
+st.header("3. Weather used for this run")
 
 weather_file = Path(
     weather_settings.get(
@@ -105,10 +137,6 @@ weather_file = Path(
 )
 
 if not weather_file.exists():
-    st.warning(
-        f"Saved weather file was not found: {weather_file}. "
-        "The run will use the default London CIBSE demo weather file."
-    )
     weather_file = DEFAULT_WEATHER_FILE
 
 w1, w2 = st.columns(2)
@@ -119,25 +147,31 @@ with w1:
 with w2:
     st.write(str(weather_file))
 
-st.header("3. Build generated HEM input")
+st.header("4. Build generated HEM input")
 
-if st.button("Build full HEM input from saved project values"):
-    try:
-        generated_case = build_full_project_case(
-            base_json_path=ACTIVE_HEM_INPUT_PATH,
-            output_json_path=GENERATED_FULL_CASE_PATH,
-            project_data=active_project,
-        )
+if blocking_errors:
+    st.warning("Fix the input issues above before building the HEM input.")
+else:
+    if st.button("Build full HEM input from saved project values"):
+        try:
+            generated_case = build_full_project_case(
+                base_json_path=ACTIVE_HEM_INPUT_PATH,
+                output_json_path=GENERATED_FULL_CASE_PATH,
+                project_data=active_project,
+            )
 
-        st.session_state["generated_full_case_ready"] = True
-        st.session_state["last_generated_full_case"] = generated_case
+            st.session_state["generated_full_case_ready"] = True
+            st.session_state["last_generated_full_case"] = generated_case
 
-        st.success(f"Generated full HEM input saved to: {GENERATED_FULL_CASE_PATH}")
+            st.success(f"Generated full HEM input saved to: {GENERATED_FULL_CASE_PATH}")
 
-    except Exception as exc:
-        st.error("Failed to build full HEM input.")
-        with st.expander("Developer/debug: build error", expanded=True):
-            st.exception(exc)
+        except Exception as exc:
+            st.error(
+                "HEM input could not be prepared. Check the saved inputs, especially "
+                "any advanced JSON sections."
+            )
+            with st.expander("Developer/debug: build error", expanded=False):
+                st.exception(exc)
 
 if st.session_state.get("generated_full_case_ready"):
     st.info("Generated HEM input is ready to run.")
@@ -152,9 +186,11 @@ if st.session_state.get("generated_full_case_ready"):
         else:
             st.write("No generated case found.")
 
-st.header("4. Run HEM and compare results")
+st.header("5. Run HEM and compare results")
 
-if not st.session_state.get("generated_full_case_ready"):
+if blocking_errors:
+    st.warning("HEM cannot run until the input issues above are fixed.")
+elif not st.session_state.get("generated_full_case_ready"):
     st.warning("Build the full HEM input before running HEM.")
 else:
     if st.button("Run HEM and compare full project case"):
@@ -267,13 +303,32 @@ else:
                 st.warning("HEM ran, but the expected summary file was not found.")
 
         else:
-            st.error("HEM run failed.")
-            st.subheader("Error output")
-            st.code(result.stderr)
+            st.error(
+                "HEM run failed. The model returned an error. "
+                "A short issue summary is shown below; detailed output is hidden."
+            )
 
-            if result.stdout:
-                st.subheader("Model output")
-                st.code(result.stdout)
+            if "design_outdoor_air_flow_rate" in result.stderr:
+                st.warning(
+                    "Ventilation issue: mechanical ventilation is selected, but the "
+                    "design outdoor air-flow rate is not greater than zero."
+                )
+            elif "ValidationError" in result.stderr:
+                st.warning(
+                    "The generated HEM JSON did not pass HEM validation. "
+                    "Check any advanced JSON sections that were edited manually."
+                )
+            else:
+                st.warning(
+                    "HEM reported an error that was not recognised by the app."
+                )
+
+            with st.expander("Developer/debug: full HEM error output", expanded=False):
+                st.code(result.stderr)
+
+                if result.stdout:
+                    st.subheader("Model output")
+                    st.code(result.stdout)
 
 with st.expander("Developer/debug: saved project data used for this run", expanded=False):
     st.json(project_data)
