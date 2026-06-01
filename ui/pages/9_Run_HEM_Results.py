@@ -60,31 +60,39 @@ fabric_rows = project_data.get("fabric_elements", [])
 ventilation = project_data.get("ventilation", {})
 thermal_bridges = project_data.get("thermal_bridges", [])
 weather_settings = project_data.get("weather_simulation", {})
+space_heat_systems = project_data.get("space_heat_systems", {})
+hot_water = project_data.get("hot_water", {})
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
-    st.metric("Fabric rows saved", len(fabric_rows))
+    st.metric("Fabric rows", len(fabric_rows))
 
 with col2:
     st.metric(
-        "Ventilation saved",
+        "Ventilation",
         "Yes" if ventilation.get("airtightness_exposure") else "No",
     )
 
 with col3:
-    st.metric("Thermal bridges saved", len(thermal_bridges))
+    st.metric("Thermal bridges", len(thermal_bridges))
 
 with col4:
     st.metric(
-        "Weather saved",
-        "Yes" if weather_settings.get("weather_file") else "Default",
+        "Heating systems",
+        len(space_heat_systems) if isinstance(space_heat_systems, dict) else 0,
     )
 
-if thermal_bridges:
-    st.info(
-        "Thermal bridges are saved in the app project, but are not yet written into "
-        "the generated HEM JSON. That connection will be added in the next batch."
+with col5:
+    st.metric(
+        "Hot water",
+        "Yes" if hot_water else "No",
+    )
+
+with col6:
+    st.metric(
+        "Weather",
+        "Yes" if weather_settings.get("weather_file") else "Default",
     )
 
 st.header("2. Weather used for this run")

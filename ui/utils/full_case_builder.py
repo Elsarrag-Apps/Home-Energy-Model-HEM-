@@ -49,7 +49,6 @@ def u_value_to_resistance(u_value):
 
 
 def is_valid_fabric_row(row: dict) -> bool:
-    """Return True if a fabric row has enough data to be written to HEM."""
     if not isinstance(row, dict):
         return False
 
@@ -61,23 +60,10 @@ def is_valid_fabric_row(row: dict) -> bool:
 
 
 def clean_fabric_rows(fabric_elements: list) -> list[dict]:
-    """Remove blank rows left by the editable table before building HEM."""
-    clean_rows = []
-
-    for row in fabric_elements or []:
-        if is_valid_fabric_row(row):
-            clean_rows.append(row)
-
-    return clean_rows
+    return [row for row in (fabric_elements or []) if is_valid_fabric_row(row)]
 
 
 def update_existing_hem_element(existing_element: dict, row: dict) -> dict:
-    """Update an existing HEM BuildingElement while preserving required HEM fields.
-
-    This avoids rebuilding party walls and ground floors from scratch, because
-    those types can require extra fields that are already present in the uploaded
-    HEM JSON.
-    """
     element = deepcopy(existing_element)
     hem_type = element.get("type")
 
@@ -91,9 +77,7 @@ def update_existing_hem_element(existing_element: dict, row: dict) -> dict:
     height = safe_positive_float(row.get("height_m"))
     width = safe_positive_float(row.get("width_m"))
     base_height = safe_float(row.get("base_height_m"))
-    areal_heat_capacity = safe_positive_float(
-        row.get("areal_heat_capacity_kj_m2k")
-    )
+    areal_heat_capacity = safe_positive_float(row.get("areal_heat_capacity_kj_m2k"))
 
     if area is not None:
         element["area"] = area
@@ -149,27 +133,17 @@ def update_existing_hem_element(existing_element: dict, row: dict) -> dict:
         if "mid_height" in element and "window_part_list" in element:
             mid_height = element.get("mid_height")
             if mid_height is not None:
-                element["window_part_list"] = [
-                    {"mid_height_air_flow_path": mid_height}
-                ]
+                element["window_part_list"] = [{"mid_height_air_flow_path": mid_height}]
 
     elif hem_type == "BuildingElementPartyWall":
         if resistance is not None:
             element["thermal_resistance_construction"] = resistance
 
-        # Preserve HEM-required party wall fields from the uploaded JSON:
-        # - party_wall_lining_type
-        # - thermal_resistance_cavity
-        # - party_wall_cavity_type
-        # unless the user explicitly changed the cavity type.
         cavity_type = str(row.get("party_wall_cavity_type", "")).strip()
         if cavity_type:
             element["party_wall_cavity_type"] = cavity_type
 
     elif hem_type == "BuildingElementGround":
-        # For ground floors, keep the original HEM ground-floor resistance
-        # unless later we implement a proper ground-floor recalculation.
-        # Updating u_value alone is safe; replacing the whole ground object is not.
         if u_value is not None:
             element["u_value"] = u_value
 
@@ -198,7 +172,6 @@ def apply_fabric_to_case(
     update_mode: str = "Replace all existing elements",
     zone_name: str = "zone 1",
 ) -> dict:
-    """Apply saved fabric rows to a HEM input dictionary."""
     fabric_elements = clean_fabric_rows(fabric_elements)
 
     if not fabric_elements:
@@ -211,7 +184,6 @@ def apply_fabric_to_case(
         zone_name = next(iter(hem_input["Zone"].keys()))
 
     existing_elements = hem_input["Zone"][zone_name].get("BuildingElement", {})
-
     updated_elements = {}
 
     if update_mode == "Add new UI elements to existing HEM elements":
@@ -226,7 +198,6 @@ def apply_fabric_to_case(
                 row,
             )
         else:
-            # New manually-added row. Build it using the simplified builder.
             new_element = build_hem_building_elements(
                 [row],
                 existing_elements=updated_elements,
@@ -243,7 +214,6 @@ def apply_fabric_to_case(
         for element in fabric_elements
         if element.get("type") == "Ground floor"
     ]
-
     floor_areas = [area for area in floor_areas if area and area > 0]
 
     if floor_areas and update_mode == "Replace all existing elements":
@@ -254,11 +224,7 @@ def apply_fabric_to_case(
     return hem_input
 
 
-def apply_ventilation_to_case(
-    hem_input: dict,
-    ventilation_data: dict,
-) -> dict:
-    """Apply saved ventilation data to a HEM input dictionary."""
+def apply_ventilation_to_case(hem_input: dict, ventilation_data: dict) -> dict:
     if not ventilation_data:
         return hem_input
 
@@ -278,26 +244,85 @@ def apply_ventilation_to_case(
     return hem_input
 
 
+def clean_thermal_bridge_rows(thermal_bridges: list) -> list[dict]:
+    clean_rows = []
+
+    for row in thermal_bridges or []:
+        if not isinstance(row, dict):
+            continue
+
+        hlc = safe_float(row.get("thermal_bridge_hlc_w_k"))
+
+        if hlc is not None:
+            clean_rows.append(row)
+
+    return clean_rows
+
+
+def apply_thermal_bridges_to_case(
+    hem_input: dict,
+    thermal_bridges: list,
+    zone_name: str = "zone 1",
+) -> dict:
+    thermal_bridges = clean_thermal_bridge_rows(thermal_bridges)
+
+    if not thermal_bridges:
+        return hem_input
+
+    if "Zone" not in hem_input:
+        raise KeyError("HEM input does not contain a Zone section.")
+
+    if zone_name not in hem_input["Zone"]:
+        zone_name = next(iter(hem_input["Zone"].keys()))
+
+    total_hlc = 0.0
+
+    for bridge in thermal_bridges:
+        total_hlc += safe_float(bridge.get("thermal_bridge_hlc_w_k"), 0.0)
+
+    hem_input["Zone"][zone_name]["ThermalBridging"] = total_hlc
+
+    return hem_input
+
+
+def apply_space_heating_to_case(hem_input: dict, space_heat_systems: dict) -> dict:
+    if isinstance(space_heat_systems, dict) and space_heat_systems:
+        hem_input["SpaceHeatSystem"] = deepcopy(space_heat_systems)
+
+    return hem_input
+
+
+def apply_hot_water_to_case(hem_input: dict, hot_water_sections: dict) -> dict:
+    if not isinstance(hot_water_sections, dict):
+        return hem_input
+
+    for section_name in ["HotWaterSource", "HotWaterDemand", "ColdWaterSource"]:
+        section_value = hot_water_sections.get(section_name)
+
+        if isinstance(section_value, dict) and section_value:
+            hem_input[section_name] = deepcopy(section_value)
+
+    return hem_input
+
+
 def build_full_project_case(
     base_json_path: Path,
     output_json_path: Path,
     project_data: dict,
 ) -> dict:
-    """Build one full HEM input case from saved app project data."""
     hem_input = load_json(base_json_path)
-
     project_sections = project_data.get("project_data", {})
 
-    fabric_elements = clean_fabric_rows(
-        project_sections.get("fabric_elements", [])
-    )
-
+    fabric_elements = clean_fabric_rows(project_sections.get("fabric_elements", []))
     fabric_update_mode = project_sections.get(
         "fabric_update_mode",
         "Replace all existing elements",
     )
 
     ventilation_data = project_sections.get("ventilation", {})
+    thermal_bridges = project_sections.get("thermal_bridges", [])
+    space_heat_systems = project_sections.get("space_heat_systems", {})
+    hot_water_sections = project_sections.get("hot_water", {})
 
     hem_input = apply_fabric_to_case(
         hem_input=hem_input,
@@ -311,6 +336,21 @@ def build_full_project_case(
         ventilation_data=ventilation_data,
     )
 
-    save_json(output_json_path, hem_input)
+    hem_input = apply_thermal_bridges_to_case(
+        hem_input=hem_input,
+        thermal_bridges=thermal_bridges,
+        zone_name="zone 1",
+    )
 
+    hem_input = apply_space_heating_to_case(
+        hem_input=hem_input,
+        space_heat_systems=space_heat_systems,
+    )
+
+    hem_input = apply_hot_water_to_case(
+        hem_input=hem_input,
+        hot_water_sections=hot_water_sections,
+    )
+
+    save_json(output_json_path, hem_input)
     return hem_input

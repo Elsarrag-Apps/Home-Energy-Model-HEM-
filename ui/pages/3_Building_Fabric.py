@@ -10,10 +10,7 @@ UTILS_DIR = UI_DIR / "utils"
 sys.path.append(str(UTILS_DIR))
 
 from hem_extractors import extract_fabric_elements_from_hem, summarise_active_hem_case
-from input_builder import build_generated_fabric_input
-from model_runner import run_hem_model
 from project_store import get_project_data_section, update_project_data
-from results_parser import compare_summary_metrics, format_number
 
 
 st.set_page_config(
@@ -25,23 +22,11 @@ st.title("Building Fabric")
 
 st.write(
     "Review and edit the fabric elements loaded from the active HEM case. "
-    "You can modify the loaded rows, add new rows, prepare a HEM input file, "
-    "and compare the result with the uploaded baseline case."
+    "Save the edited rows here, then use the central Run HEM / Results tab to "
+    "build and run the full project case."
 )
 
 BASE_JSON_PATH = Path("ui/temp/active_hem_input.json")
-WEATHER_FILE = Path("test/e2e/demo_files/London_weather_CIBSE_format.csv")
-GENERATED_FABRIC_INPUT_PATH = Path("ui/temp/generated_fabric_case.json")
-
-FABRIC_SUMMARY_PATH = Path(
-    "ui/temp/generated_fabric_case__results/"
-    "generated_fabric_case__core__results_summary.csv"
-)
-
-BASE_SUMMARY_PATH = Path(
-    "test/e2e/demo_files/short/demo__results/"
-    "demo__core__results_summary.csv"
-)
 
 if not BASE_JSON_PATH.exists():
     st.error(
@@ -139,6 +124,8 @@ fabric_update_mode = st.radio(
     index=0,
 )
 
+update_project_data("fabric_update_mode", fabric_update_mode)
+
 if fabric_update_mode == "Replace all existing elements":
     st.info(
         "Recommended for editing an uploaded case: the generated file uses the edited table below as the fabric model."
@@ -234,6 +221,7 @@ if st.button("Save edited fabric rows"):
     edited_rows = edited_df.fillna("").to_dict(orient="records")
     st.session_state["fabric_elements"] = edited_rows
     update_project_data("fabric_elements", edited_rows)
+    update_project_data("fabric_update_mode", fabric_update_mode)
     st.success("Edited fabric rows saved to the app project.")
 
 st.header("4. Fabric input summary")
@@ -264,136 +252,19 @@ else:
     chart_df["name"] = chart_df["name"].astype(str)
     st.bar_chart(chart_df[["name", "hlc_w_k"]].set_index("name"))
 
-st.header("5. Prepare and run HEM")
+st.header("5. Project save status")
 
-fabric_elements_for_run = edited_df.fillna("").to_dict(orient="records")
+if st.button("Save all fabric values to project"):
+    edited_rows = edited_df.fillna("").to_dict(orient="records")
+    st.session_state["fabric_elements"] = edited_rows
+    update_project_data("fabric_elements", edited_rows)
+    update_project_data("fabric_update_mode", fabric_update_mode)
+    st.success("All fabric values saved to the app project.")
 
-if not fabric_elements_for_run:
-    st.warning("Add or restore fabric rows before preparing the HEM input.")
+if st.session_state.get("fabric_elements"):
+    st.success("Fabric data is available for the central Run HEM / Results page.")
 else:
-    if st.button("Prepare HEM input from edited fabric rows"):
-        try:
-            st.session_state["fabric_elements"] = fabric_elements_for_run
-            update_project_data("fabric_elements", fabric_elements_for_run)
-
-            generated_input = build_generated_fabric_input(
-                base_json_path=BASE_JSON_PATH,
-                output_json_path=GENERATED_FABRIC_INPUT_PATH,
-                fabric_elements=fabric_elements_for_run,
-                zone_name="zone 1",
-                update_mode=fabric_update_mode,
-            )
-
-            st.session_state["generated_fabric_input_ready"] = True
-            st.session_state["last_generated_fabric_json"] = generated_input[
-                "Zone"
-            ]["zone 1"]["BuildingElement"]
-
-            st.success("HEM input prepared successfully from edited fabric rows.")
-
-        except Exception as exc:
-            st.error("Failed to prepare HEM fabric input.")
-            with st.expander("Developer/debug: preparation error", expanded=True):
-                st.exception(exc)
-
-    if st.session_state.get("generated_fabric_input_ready"):
-        st.info("Prepared case is ready. You can now run HEM and compare results.")
-
-        if st.button("Run HEM and compare fabric case"):
-            with st.spinner("Running HEM..."):
-                result = run_hem_model(GENERATED_FABRIC_INPUT_PATH, WEATHER_FILE)
-
-            if result.returncode == 0:
-                st.success("HEM run completed successfully.")
-
-                if FABRIC_SUMMARY_PATH.exists():
-                    summary_text = FABRIC_SUMMARY_PATH.read_text(encoding="utf-8")
-
-                    st.subheader("Results comparison")
-
-                    if BASE_SUMMARY_PATH.exists():
-                        comparison = compare_summary_metrics(
-                            BASE_SUMMARY_PATH,
-                            FABRIC_SUMMARY_PATH,
-                        )
-
-                        col1, col2, col3 = st.columns(3)
-
-                        space_heat = next(
-                            item for item in comparison
-                            if item["metric"] == "Space heat demand"
-                        )
-                        peak_elec = next(
-                            item for item in comparison
-                            if item["metric"] == "Peak electricity consumption"
-                        )
-                        delivered = next(
-                            item for item in comparison
-                            if item["metric"] == "Delivered energy total"
-                        )
-
-                        with col1:
-                            st.metric(
-                                "Space heat demand",
-                                f"{format_number(space_heat['generated_value'])} {space_heat['unit']}",
-                                f"{format_number(space_heat['difference'])} {space_heat['unit']}",
-                            )
-
-                        with col2:
-                            st.metric(
-                                "Peak electricity",
-                                f"{format_number(peak_elec['generated_value'])} {peak_elec['unit']}",
-                                f"{format_number(peak_elec['difference'])} {peak_elec['unit']}",
-                            )
-
-                        with col3:
-                            st.metric(
-                                "Delivered energy",
-                                f"{format_number(delivered['generated_value'])} {delivered['unit']}",
-                                f"{format_number(delivered['difference'])} {delivered['unit']}",
-                            )
-
-                        with st.expander("Detailed comparison table", expanded=False):
-                            st.dataframe(
-                                comparison,
-                                use_container_width=True,
-                                hide_index=True,
-                            )
-
-                    else:
-                        st.warning(
-                            "Base summary file was not found. Run the baseline case first if comparison is needed."
-                        )
-
-                    with st.expander("View full HEM summary output", expanded=False):
-                        st.text(summary_text)
-
-                    st.download_button(
-                        "Download HEM summary CSV",
-                        data=summary_text,
-                        file_name="generated_fabric_case__core__results_summary.csv",
-                        mime="text/csv",
-                    )
-
-                else:
-                    st.warning("HEM ran, but the expected summary file was not found.")
-
-            else:
-                st.error("HEM run failed.")
-                st.subheader("Error output")
-                st.code(result.stderr)
-
-                if result.stdout:
-                    st.subheader("Model output")
-                    st.code(result.stdout)
-
-with st.expander("Advanced: view generated HEM fabric JSON", expanded=False):
-    generated_json = st.session_state.get("last_generated_fabric_json")
-
-    if generated_json is None:
-        st.write("No generated fabric JSON has been prepared yet.")
-    else:
-        st.json(generated_json)
+    st.info("No fabric data has been saved yet.")
 
 with st.expander("Developer/debug: view saved fabric rows", expanded=False):
     st.json(st.session_state.get("fabric_elements", []))

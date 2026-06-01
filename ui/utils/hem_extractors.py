@@ -44,7 +44,6 @@ def load_json_file(path: Path) -> dict:
 
 
 def orientation_from_degrees(value) -> str:
-    """Convert HEM orientation degrees to nearest UI orientation label."""
     try:
         degrees = int(round(float(value) / 45) * 45) % 360
     except (TypeError, ValueError):
@@ -54,7 +53,6 @@ def orientation_from_degrees(value) -> str:
 
 
 def u_value_from_resistance(value, fallback=0.21) -> float:
-    """Convert HEM thermal resistance to approximate U-value."""
     try:
         resistance = float(value)
         if resistance > 0:
@@ -66,7 +64,6 @@ def u_value_from_resistance(value, fallback=0.21) -> float:
 
 
 def element_type_from_hem(name: str, element: dict) -> str:
-    """Map HEM BuildingElement type to user-facing element type."""
     hem_type = element.get("type")
 
     if hem_type == "BuildingElementTransparent":
@@ -96,9 +93,7 @@ def extract_fabric_elements_from_hem(
     hem_json_path: Path,
     zone_name: str = "zone 1",
 ) -> list[dict]:
-    """Extract editable fabric rows from HEM Zone -> BuildingElement."""
     hem_input = load_json_file(hem_json_path)
-
     zones = hem_input.get("Zone", {})
 
     if zone_name not in zones:
@@ -107,7 +102,6 @@ def extract_fabric_elements_from_hem(
         zone_name = next(iter(zones.keys()))
 
     building_elements = zones[zone_name].get("BuildingElement", {})
-
     rows = []
 
     for name, element in building_elements.items():
@@ -162,10 +156,7 @@ def extract_fabric_elements_from_hem(
             "thickness_walls_m": float(element.get("thickness_walls", 0.1705)),
             "psi_wall_floor_junc": float(element.get("psi_wall_floor_junc", 0.0)),
             "floor_type": element.get("floor_type", "Slab_no_edge_insulation"),
-            "party_wall_cavity_type": element.get(
-                "party_wall_cavity_type",
-                "solid",
-            ),
+            "party_wall_cavity_type": element.get("party_wall_cavity_type", "solid"),
             "notes": "Loaded from uploaded HEM JSON",
         }
 
@@ -175,10 +166,8 @@ def extract_fabric_elements_from_hem(
 
 
 def extract_ventilation_defaults_from_hem(hem_json_path: Path) -> dict:
-    """Extract UI-friendly infiltration and ventilation defaults from HEM JSON."""
     hem_input = load_json_file(hem_json_path)
     infil = hem_input.get("InfiltrationVentilation", {})
-
     leaks = infil.get("Leaks", {})
 
     airtightness_exposure = {
@@ -206,15 +195,9 @@ def extract_ventilation_defaults_from_hem(hem_json_path: Path) -> dict:
             {
                 "name": name,
                 "area_cm2": float(vent.get("area_cm2", 100)),
-                "pressure_difference_ref": float(
-                    vent.get("pressure_difference_ref", 20)
-                ),
-                "mid_height_m": float(
-                    vent.get("mid_height_air_flow_path", 1.5)
-                ),
-                "orientation": orientation_from_degrees(
-                    vent.get("orientation360", 180)
-                ),
+                "pressure_difference_ref": float(vent.get("pressure_difference_ref", 20)),
+                "mid_height_m": float(vent.get("mid_height_air_flow_path", 1.5)),
+                "orientation": orientation_from_degrees(vent.get("orientation360", 180)),
                 "pitch": float(vent.get("pitch", 60)),
             }
         )
@@ -239,33 +222,26 @@ def extract_ventilation_defaults_from_hem(hem_json_path: Path) -> dict:
 
     if mech_section:
         first_mech = next(iter(mech_section.values()))
-
         hem_vent_type = first_mech.get("vent_type", "None")
 
         mechanical_ventilation["vent_type"] = HEM_MECH_TO_UI.get(
             hem_vent_type,
             "None",
         )
-
         mechanical_ventilation["energy_supply"] = first_mech.get(
             "EnergySupply",
             "mains elec",
         )
-
         mechanical_ventilation["design_flow_l_s"] = (
             float(first_mech.get("design_outdoor_air_flow_rate", 0.0)) / 3.6
         )
-
         mechanical_ventilation["sfp_w_l_s"] = float(first_mech.get("SFP", 0.5))
-
         mechanical_ventilation["sfp_in_use_factor"] = float(
             first_mech.get("SFP_in_use_factor", 1.0)
         )
-
         mechanical_ventilation["mvhr_efficiency_percent"] = (
             float(first_mech.get("mvhr_eff", 0.0)) * 100
         )
-
         mechanical_ventilation["mvhr_location"] = first_mech.get(
             "mvhr_location",
             "inside",
@@ -281,7 +257,6 @@ def extract_ventilation_defaults_from_hem(hem_json_path: Path) -> dict:
         mechanical_ventilation["intake_mid_height_m"] = float(
             intake.get("mid_height_air_flow_path", 2.0)
         )
-
         mechanical_ventilation["exhaust_orientation"] = orientation_from_degrees(
             exhaust.get("orientation360", 180)
         )
@@ -297,12 +272,59 @@ def extract_ventilation_defaults_from_hem(hem_json_path: Path) -> dict:
     }
 
 
+def extract_space_heating_systems_from_hem(hem_json_path: Path) -> dict:
+    hem_input = load_json_file(hem_json_path)
+    return hem_input.get("SpaceHeatSystem", {})
+
+
+def summarise_space_heating_systems(space_heat_systems: dict) -> list[dict]:
+    rows = []
+
+    for name, system in (space_heat_systems or {}).items():
+        if isinstance(system, dict):
+            rows.append(
+                {
+                    "name": name,
+                    "type": system.get("type", "Unknown"),
+                    "energy_supply": system.get("EnergySupply", system.get("energy_supply", "")),
+                    "rated_power": system.get("rated_power", ""),
+                    "control": system.get("Control", system.get("control", "")),
+                }
+            )
+
+    return rows
+
+
+def extract_hot_water_sections_from_hem(hem_json_path: Path) -> dict:
+    hem_input = load_json_file(hem_json_path)
+
+    return {
+        "HotWaterSource": hem_input.get("HotWaterSource", {}),
+        "HotWaterDemand": hem_input.get("HotWaterDemand", {}),
+        "ColdWaterSource": hem_input.get("ColdWaterSource", {}),
+    }
+
+
+def summarise_hot_water_sections(hot_water_sections: dict) -> dict:
+    hot_sources = hot_water_sections.get("HotWaterSource", {})
+    hot_demands = hot_water_sections.get("HotWaterDemand", {})
+    cold_sources = hot_water_sections.get("ColdWaterSource", {})
+
+    return {
+        "hot_water_source_count": len(hot_sources) if isinstance(hot_sources, dict) else 0,
+        "hot_water_demand_count": len(hot_demands) if isinstance(hot_demands, dict) else 0,
+        "cold_water_source_count": len(cold_sources) if isinstance(cold_sources, dict) else 0,
+    }
+
+
 def summarise_active_hem_case(hem_json_path: Path) -> dict:
-    """Return a user-friendly summary of the active HEM case."""
     hem_input = load_json_file(hem_json_path)
 
     zones = hem_input.get("Zone", {})
     infil = hem_input.get("InfiltrationVentilation", {})
+    space_heat = hem_input.get("SpaceHeatSystem", {})
+    hot_water_source = hem_input.get("HotWaterSource", {})
+    hot_water_demand = hem_input.get("HotWaterDemand", {})
 
     fabric_counts = {
         "opaque": 0,
@@ -329,5 +351,8 @@ def summarise_active_hem_case(hem_json_path: Path) -> dict:
         "has_infiltration_ventilation": bool(infil),
         "background_vent_count": len(infil.get("Vents", {})),
         "mechanical_ventilation_count": len(infil.get("MechanicalVentilation", {})),
+        "space_heating_system_count": len(space_heat),
+        "hot_water_source_count": len(hot_water_source),
+        "hot_water_demand_count": len(hot_water_demand),
         "fabric_counts": fabric_counts,
     }
