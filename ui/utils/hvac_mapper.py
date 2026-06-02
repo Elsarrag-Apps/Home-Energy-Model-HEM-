@@ -235,7 +235,6 @@ def build_wet_distribution_system(heating_data: dict) -> dict:
             },
             "Control": control_name,
             "Zone": zone_name,
-            "advanced_start": safe_float(heating_data.get("advanced_start"), 2),
             "design_flow_temp": safe_float(heating_data.get("design_flow_temp"), 45.0),
             "ecodesign_controller": {
                 "ecodesign_control_class": int(
@@ -265,7 +264,6 @@ def build_wet_distribution_system(heating_data: dict) -> dict:
             "temp_diff_emit_dsgn": safe_float(
                 heating_data.get("temp_diff_emit_dsgn"), 5.0
             ),
-            "temp_setback": safe_float(heating_data.get("temp_setback"), 18.0),
             "thermal_mass": safe_float(heating_data.get("thermal_mass"), 0.019),
             "variable_flow": safe_bool(heating_data.get("variable_flow"), True),
         }
