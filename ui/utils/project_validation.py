@@ -200,6 +200,63 @@ def validate_fabric(project_data: dict) -> list[dict]:
     return messages
 
 
+
+def validate_hot_water_form(project_data: dict) -> list[dict]:
+    messages = []
+
+    hot_water = project_data.get("hot_water_form", {}) or {}
+
+    if not hot_water:
+        return messages
+
+    if not hot_water.get("use_form_hot_water", False):
+        return messages
+
+    volume = safe_float(hot_water.get("cylinder_volume_litres"), 0.0)
+    power = safe_float(hot_water.get("immersion_power_kw"), 0.0)
+    losses = safe_float(hot_water.get("daily_losses_kwh"), 0.0)
+    min_temp = safe_float(hot_water.get("min_temperature_c"), 52.0)
+    max_temp = safe_float(hot_water.get("max_temperature_c"), 55.0)
+
+    if volume is None or volume <= 0:
+        messages.append(
+            {
+                "level": "error",
+                "section": "Hot water",
+                "message": "Cylinder volume must be greater than zero.",
+            }
+        )
+
+    if power is None or power <= 0:
+        messages.append(
+            {
+                "level": "error",
+                "section": "Hot water",
+                "message": "Immersion heater power must be greater than zero.",
+            }
+        )
+
+    if losses is None or losses < 0:
+        messages.append(
+            {
+                "level": "error",
+                "section": "Hot water",
+                "message": "Cylinder daily losses cannot be negative.",
+            }
+        )
+
+    if min_temp is not None and max_temp is not None and min_temp > max_temp:
+        messages.append(
+            {
+                "level": "error",
+                "section": "Hot water",
+                "message": "Minimum cylinder control temperature cannot exceed maximum temperature.",
+            }
+        )
+
+    return messages
+
+
 def validate_json_sections(project_data: dict) -> list[dict]:
     """Validate preserved JSON sections are dictionaries."""
     messages = []
@@ -209,6 +266,7 @@ def validate_json_sections(project_data: dict) -> list[dict]:
         "heat_source_wet": "Wet heat sources",
         "heating_form": "Generated heating form",
         "hot_water": "Hot water",
+        "hot_water_form": "Generated hot water form",
         "gains_controls": "Internal gains, controls and events",
         "energy_supply": "Energy supply",
     }
@@ -242,6 +300,7 @@ def validate_project_before_run(
     messages.extend(validate_heating_form(project_data))
     messages.extend(validate_cooling(project_data))
     messages.extend(validate_weather(project_data, default_weather_file))
+    messages.extend(validate_hot_water_form(project_data))
     messages.extend(validate_json_sections(project_data))
 
     return messages
