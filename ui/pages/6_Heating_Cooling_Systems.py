@@ -10,6 +10,7 @@ UI_DIR = CURRENT_DIR.parent
 UTILS_DIR = UI_DIR / "utils"
 sys.path.append(str(UTILS_DIR))
 
+from hvac_mapper import summarise_cooling_inputs
 from hem_extractors import (
     extract_space_heating_systems_from_hem,
     summarise_space_heating_systems,
@@ -25,9 +26,9 @@ st.set_page_config(
 st.title("Heating & Cooling Systems")
 
 st.write(
-    "Review and edit heating systems from the active HEM case, and record cooling "
-    "system intent. Heating is currently connected to HEM through SpaceHeatSystem. "
-    "Cooling will be written to HEM once a valid SpaceCoolSystem schema example is available."
+    "Review and edit heating systems from the active HEM case, and configure active cooling. "
+    "Heating is currently preserved through SpaceHeatSystem. Cooling is mapped to HEM "
+    "using the validated SpaceCoolSystem AirConditioning pattern."
 )
 
 BASE_JSON_PATH = Path("ui/temp/active_hem_input.json")
@@ -175,9 +176,9 @@ with col_save:
 st.header("3. Cooling systems")
 
 st.info(
-    "No SpaceCoolSystem section was found in the uploaded demo HEM JSON. "
-    "Cooling settings below are saved in the app project for now, but are not "
-    "yet written into the generated HEM JSON until a valid HEM cooling schema is confirmed."
+    "Cooling is now connected using the HEM AirConditioning SpaceCoolSystem schema. "
+    "The generated HEM file will include SpaceCoolSystem, a cooling control, and a "
+    "Zone reference when cooling is enabled."
 )
 
 saved_cooling = get_project_data_section("cooling_systems", {}) or {}
@@ -236,6 +237,14 @@ with st.form("cooling_placeholder_form"):
             step=0.1,
         )
 
+        frac_convective = st.number_input(
+            "Cooling convective fraction",
+            min_value=0.0,
+            max_value=1.0,
+            value=float(saved_cooling.get("frac_convective", 0.95)),
+            step=0.05,
+        )
+
     with c3:
         cooling_setpoint_c = st.number_input(
             "Cooling setpoint (degC)",
@@ -266,14 +275,43 @@ if save_cooling:
         "cooling_type": cooling_type,
         "cooling_capacity_kw": cooling_capacity_kw,
         "cooling_cop": cooling_cop,
+        "frac_convective": frac_convective,
         "cooling_setpoint_c": cooling_setpoint_c,
         "cooling_energy_supply": cooling_energy_supply,
         "cooling_notes": cooling_notes,
-        "hem_connection_status": "not_written_until_space_cool_schema_confirmed",
+        "hem_system_name": "cooling system 1",
+        "hem_control_name": "cooling_system_1_control",
+        "hem_connection_status": "written_to_space_cool_system_when_enabled",
     }
 
     update_project_data("cooling_systems", cooling_data)
     st.success("Cooling settings saved to the app project.")
+
+st.subheader("Cooling input insight")
+
+current_cooling = get_project_data_section("cooling_systems", {}) or {}
+project_setup = get_project_data_section("project_setup", {}) or {}
+floor_area = float(project_setup.get("floor_area_m2", 0) or 0)
+cooling_summary = summarise_cooling_inputs(current_cooling, floor_area_m2=floor_area)
+
+ci1, ci2, ci3, ci4 = st.columns(4)
+
+with ci1:
+    st.metric("Cooling enabled", "Yes" if cooling_summary["enabled"] else "No")
+
+with ci2:
+    st.metric("Cooling capacity", f"{cooling_summary['capacity_kw']:.2f} kW")
+
+with ci3:
+    st.metric("Cooling COP/EER", f"{cooling_summary['cop']:.2f}")
+
+with ci4:
+    st.metric("Capacity intensity", f"{cooling_summary['capacity_w_m2']:.1f} W/m2")
+
+if cooling_summary["status"] == "OK":
+    st.success("Cooling input check: OK")
+else:
+    st.warning(cooling_summary["status"])
 
 st.header("4. Project save status")
 

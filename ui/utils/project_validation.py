@@ -10,6 +10,52 @@ def safe_float(value, default=None):
         return default
 
 
+
+def validate_cooling(project_data: dict) -> list[dict]:
+    messages = []
+
+    cooling = project_data.get("cooling_systems", {}) or {}
+
+    if not cooling:
+        return messages
+
+    if not cooling.get("cooling_enabled", False):
+        return messages
+
+    capacity = safe_float(cooling.get("cooling_capacity_kw"), 0.0)
+    cop = safe_float(cooling.get("cooling_cop"), 0.0)
+    cooling_type = str(cooling.get("cooling_type", "None")).strip()
+
+    if cooling_type.lower() == "none":
+        messages.append(
+            {
+                "level": "error",
+                "section": "Cooling",
+                "message": "Cooling is enabled, but cooling system type is None.",
+            }
+        )
+
+    if capacity is None or capacity <= 0:
+        messages.append(
+            {
+                "level": "error",
+                "section": "Cooling",
+                "message": "Cooling is enabled, but cooling capacity is not greater than zero.",
+            }
+        )
+
+    if cop is None or cop <= 0:
+        messages.append(
+            {
+                "level": "error",
+                "section": "Cooling",
+                "message": "Cooling is enabled, but COP/EER is not greater than zero.",
+            }
+        )
+
+    return messages
+
+
 def validate_ventilation(project_data: dict) -> list[dict]:
     """Validate saved ventilation inputs before HEM is built/run."""
     messages = []
@@ -133,6 +179,7 @@ def validate_project_before_run(
 
     messages.extend(validate_fabric(project_data))
     messages.extend(validate_ventilation(project_data))
+    messages.extend(validate_cooling(project_data))
     messages.extend(validate_weather(project_data, default_weather_file))
     messages.extend(validate_json_sections(project_data))
 
