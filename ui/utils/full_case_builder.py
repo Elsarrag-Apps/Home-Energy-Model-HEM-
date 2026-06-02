@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from pathlib import Path
 
-from hvac_mapper import apply_space_cooling_to_hem_input
+from hvac_mapper import apply_form_heating_to_hem_input, apply_space_cooling_to_hem_input
 from input_builder import (
     ORIENTATION_TO_DEGREES,
     build_hem_building_elements,
@@ -352,6 +352,7 @@ def build_full_project_case(
     thermal_bridges = project_sections.get("thermal_bridges", [])
     space_heat_systems = project_sections.get("space_heat_systems", {})
     heat_source_wet = project_sections.get("heat_source_wet", {})
+    heating_form = project_sections.get("heating_form", {})
     hot_water_sections = project_sections.get("hot_water", {})
     gains_controls = project_sections.get("gains_controls", {})
     energy_supply = project_sections.get("energy_supply", {})
@@ -383,6 +384,12 @@ def build_full_project_case(
     hem_input = apply_heat_source_wet_to_case(
         hem_input=hem_input,
         heat_source_wet=heat_source_wet,
+    )
+
+    hem_input = apply_form_heating_to_hem_input(
+        hem_input=hem_input,
+        heating_data=heating_form,
+        zone_name="zone 1",
     )
 
     hem_input = apply_hot_water_to_case(

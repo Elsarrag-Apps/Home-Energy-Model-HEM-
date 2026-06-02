@@ -11,6 +11,64 @@ def safe_float(value, default=None):
 
 
 
+
+def validate_heating_form(project_data: dict) -> list[dict]:
+    messages = []
+
+    heating = project_data.get("heating_form", {}) or {}
+
+    if not heating:
+        return messages
+
+    if not heating.get("use_form_heating", False):
+        return messages
+
+    mode = str(heating.get("heating_mode", "")).strip()
+    capacity = safe_float(heating.get("rated_power_kw"), 0.0)
+
+    if mode in ["", "Preserve uploaded HEM heating"]:
+        messages.append(
+            {
+                "level": "error",
+                "section": "Heating",
+                "message": "Form-based heating is enabled, but no generated heating mode is selected.",
+            }
+        )
+
+    if capacity is None or capacity <= 0:
+        messages.append(
+            {
+                "level": "error",
+                "section": "Heating",
+                "message": "Heating capacity must be greater than zero.",
+            }
+        )
+
+    if mode == "Wet central heating - heat pump":
+        cop = safe_float(heating.get("heat_pump_nominal_cop"), 0.0)
+        if cop is None or cop <= 0:
+            messages.append(
+                {
+                    "level": "error",
+                    "section": "Heating",
+                    "message": "Heat pump nominal COP must be greater than zero.",
+                }
+            )
+
+    if mode == "Wet central heating - boiler":
+        eff = safe_float(heating.get("boiler_efficiency_full_load"), 0.0)
+        if eff is None or eff <= 0:
+            messages.append(
+                {
+                    "level": "error",
+                    "section": "Heating",
+                    "message": "Boiler full-load efficiency must be greater than zero.",
+                }
+            )
+
+    return messages
+
+
 def validate_cooling(project_data: dict) -> list[dict]:
     messages = []
 
@@ -149,6 +207,7 @@ def validate_json_sections(project_data: dict) -> list[dict]:
     section_checks = {
         "space_heat_systems": "Heating systems",
         "heat_source_wet": "Wet heat sources",
+        "heating_form": "Generated heating form",
         "hot_water": "Hot water",
         "gains_controls": "Internal gains, controls and events",
         "energy_supply": "Energy supply",
@@ -180,6 +239,7 @@ def validate_project_before_run(
 
     messages.extend(validate_fabric(project_data))
     messages.extend(validate_ventilation(project_data))
+    messages.extend(validate_heating_form(project_data))
     messages.extend(validate_cooling(project_data))
     messages.extend(validate_weather(project_data, default_weather_file))
     messages.extend(validate_json_sections(project_data))
