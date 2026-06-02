@@ -1,5 +1,11 @@
 from pathlib import Path
 
+path = Path("ui/utils/results_parser.py")
+
+path.write_text(
+    '''
+from pathlib import Path
+
 
 def format_number(value, decimals=3):
     """Format numbers for Streamlit metric cards."""
@@ -64,9 +70,9 @@ def extract_peak_electricity(summary_csv_path):
         if stripped.startswith("Peak consumption (electricity)"):
             parts = [part.strip() for part in line.split(",")]
 
-            if len(parts) >= 2:
+            if len(parts) >= 3:
                 try:
-                    return float(parts[1])
+                    return float(parts[2])
                 except ValueError:
                     return 0.0
 
@@ -237,60 +243,8 @@ def compare_summary_metrics(base_summary_path, generated_summary_path):
         )
 
     return metrics
+'''.strip() + "\n",
+    encoding="utf-8",
+)
 
-
-
-def extract_delivered_energy_rows(summary_csv_path):
-    """Return delivered energy end-use rows from HEM summary CSV."""
-    rows = []
-    lines = read_summary_lines(summary_csv_path)
-
-    in_delivered_section = False
-
-    for line in lines:
-        stripped = line.strip()
-
-        if stripped.startswith("Delivered energy by end-use"):
-            in_delivered_section = True
-            continue
-
-        if in_delivered_section and (
-            stripped.startswith("Hot water system")
-            or stripped.startswith("Space heating system")
-            or stripped.startswith("Energy Demand Summary")
-            or stripped.startswith("Energy Supply Summary")
-        ):
-            break
-
-        if not in_delivered_section:
-            continue
-
-        parts = [part.strip() for part in line.split(",")]
-
-        if len(parts) < 2:
-            continue
-
-        row_name = parts[0]
-
-        if row_name == "" or row_name.lower() == "total":
-            continue
-
-        try:
-            total = float(parts[1])
-        except ValueError:
-            continue
-
-        rows.append(
-            {
-                "end_use": row_name,
-                "total_kwh_m2": total,
-                "mains_elec_kwh_m2": float(parts[3]) if len(parts) > 3 and parts[3] not in ["", "DIV/0"] else 0.0,
-            }
-        )
-
-    return rows
-
-
-def extract_hot_water_energy_by_names(summary_csv_path, dhw_end_use_names):
-    """Return DHW energy using explicit DHW end-use names."""
-    return extract_delivered_energy_end_use(summary_csv_path, dhw_end_use_names)
+print("Restored ui/utils/results_parser.py")

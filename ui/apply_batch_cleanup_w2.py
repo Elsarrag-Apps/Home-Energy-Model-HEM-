@@ -1,3 +1,16 @@
+from pathlib import Path
+
+
+def write_file(path, content):
+    file_path = Path(path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(content.strip() + "\n", encoding="utf-8")
+    print(f"Updated {file_path}")
+
+
+write_file(
+    "ui/utils/hot_water_mapper.py",
+    """
 def safe_float(value, default=0.0):
     try:
         if value == "":
@@ -49,7 +62,7 @@ def parse_temperature_profile(text: str) -> list[float]:
 
     values = []
 
-    for item in text.replace("\n", ",").split(","):
+    for item in text.replace("\\n", ",").split(","):
         item = item.strip()
         if item:
             values.append(safe_float(item, 10.0))
@@ -458,3 +471,5 @@ def summarise_hot_water_inputs(hot_water_data: dict) -> dict:
         "primary_power": primary_power,
         "status": status,
     }
+""",
+)

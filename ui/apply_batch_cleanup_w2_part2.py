@@ -1,3 +1,16 @@
+from pathlib import Path
+
+
+def write_file(path, content):
+    file_path = Path(path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(content.strip() + "\n", encoding="utf-8")
+    print(f"Updated {file_path}")
+
+
+write_file(
+    "ui/pages/7_Hot_Water.py",
+    """
 import json
 import sys
 from pathlib import Path
@@ -690,3 +703,7 @@ with st.expander("Developer/debug: view saved hot water data", expanded=False):
 
     st.subheader("Preserved HEM hot water sections")
     st.json(st.session_state.get("hot_water_sections", {}))
+""",
+)
+
+print("Batch W2 part 2 complete.")
