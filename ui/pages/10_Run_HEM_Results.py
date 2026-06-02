@@ -131,6 +131,7 @@ ventilation = project_data.get("ventilation", {})
 thermal_bridges = project_data.get("thermal_bridges", [])
 weather_settings = project_data.get("weather_simulation", {})
 space_heat_systems = project_data.get("space_heat_systems", {})
+heat_source_wet = project_data.get("heat_source_wet", {})
 hot_water = project_data.get("hot_water", {})
 gains_controls = project_data.get("gains_controls", {})
 energy_supply = project_data.get("energy_supply", {})
@@ -174,19 +175,19 @@ with col4:
     )
 
 with col5:
-    st.metric("Hot water", "Yes" if hot_water else "No")
+    st.metric(
+        "Heat sources",
+        len(heat_source_wet) if isinstance(heat_source_wet, dict) else 0,
+    )
 
 with col6:
-    st.metric("Gains/controls", "Yes" if gains_controls else "No")
+    st.metric("Hot water", "Yes" if hot_water else "No")
 
 with col7:
-    st.metric("Energy supply", "Yes" if energy_supply else "No")
+    st.metric("Gains/controls", "Yes" if gains_controls else "No")
 
 with col8:
-    st.metric(
-        "Weather",
-        "Yes" if weather_settings.get("weather_file") else "Default",
-    )
+    st.metric("Energy supply", "Yes" if energy_supply else "No")
 
 
 st.header("2. Pre-run checks")

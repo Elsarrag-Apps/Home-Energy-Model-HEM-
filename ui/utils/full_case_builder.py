@@ -293,6 +293,14 @@ def apply_space_heating_to_case(hem_input: dict, space_heat_systems: dict) -> di
     return hem_input
 
 
+def apply_heat_source_wet_to_case(hem_input: dict, heat_source_wet: dict) -> dict:
+    """Apply saved HeatSourceWet dictionary to a HEM input."""
+    if isinstance(heat_source_wet, dict) and heat_source_wet:
+        hem_input["HeatSourceWet"] = deepcopy(heat_source_wet)
+
+    return hem_input
+
+
 def apply_hot_water_to_case(hem_input: dict, hot_water_sections: dict) -> dict:
     if not isinstance(hot_water_sections, dict):
         return hem_input
@@ -343,6 +351,7 @@ def build_full_project_case(
     ventilation_data = project_sections.get("ventilation", {})
     thermal_bridges = project_sections.get("thermal_bridges", [])
     space_heat_systems = project_sections.get("space_heat_systems", {})
+    heat_source_wet = project_sections.get("heat_source_wet", {})
     hot_water_sections = project_sections.get("hot_water", {})
     gains_controls = project_sections.get("gains_controls", {})
     energy_supply = project_sections.get("energy_supply", {})
@@ -369,6 +378,11 @@ def build_full_project_case(
     hem_input = apply_space_heating_to_case(
         hem_input=hem_input,
         space_heat_systems=space_heat_systems,
+    )
+
+    hem_input = apply_heat_source_wet_to_case(
+        hem_input=hem_input,
+        heat_source_wet=heat_source_wet,
     )
 
     hem_input = apply_hot_water_to_case(

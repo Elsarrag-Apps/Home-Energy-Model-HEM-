@@ -389,3 +389,73 @@ def summarise_active_hem_case(hem_json_path: Path) -> dict:
         "control_count": len(controls),
         "fabric_counts": fabric_counts,
     }
+
+
+def extract_heat_source_wet_from_hem(hem_json_path: Path) -> dict:
+    """Extract HeatSourceWet from uploaded HEM JSON."""
+    hem_input = load_json_file(hem_json_path)
+    return hem_input.get("HeatSourceWet", {})
+
+
+def summarise_heat_source_wet(heat_source_wet: dict) -> list[dict]:
+    """Create a summary table for HEM HeatSourceWet entries."""
+    rows = []
+
+    for name, source in (heat_source_wet or {}).items():
+        if not isinstance(source, dict):
+            continue
+
+        source_type = source.get("type", "Unknown")
+
+        row = {
+            "name": name,
+            "type": source_type,
+            "energy_supply": source.get("EnergySupply", ""),
+            "aux_energy_supply": source.get("EnergySupply_aux", ""),
+            "rated_power": source.get(
+                "rated_power",
+                source.get("power_max", source.get("rated_charge_power", "")),
+            ),
+            "efficiency_or_cop": "",
+            "notes": "",
+        }
+
+        if source_type == "Boiler":
+            row["efficiency_or_cop"] = source.get("efficiency_full_load", "")
+            row["notes"] = f"Part-load efficiency: {source.get('efficiency_part_load', '')}"
+
+        elif source_type == "HeatPump":
+            test_data = source.get("test_data_EN14825", [])
+            if test_data:
+                cops = [
+                    item.get("cop")
+                    for item in test_data
+                    if isinstance(item, dict) and item.get("cop") is not None
+                ]
+                capacities = [
+                    item.get("capacity")
+                    for item in test_data
+                    if isinstance(item, dict) and item.get("capacity") is not None
+                ]
+
+                if cops:
+                    row["efficiency_or_cop"] = round(sum(cops) / len(cops), 2)
+
+                if capacities:
+                    row["rated_power"] = max(capacities)
+
+                row["notes"] = f"EN14825 points: {len(test_data)}"
+
+            row["aux_energy_supply"] = "mains elec"
+
+        elif source_type == "HIU":
+            row["rated_power"] = source.get("power_max", "")
+            row["notes"] = f"Daily loss: {source.get('HIU_daily_loss', '')}"
+
+        elif source_type == "HeatBattery":
+            row["rated_power"] = source.get("rated_charge_power", "")
+            row["notes"] = f"Battery type: {source.get('battery_type', '')}"
+
+        rows.append(row)
+
+    return rows

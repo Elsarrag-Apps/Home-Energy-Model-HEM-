@@ -1,3 +1,174 @@
+from pathlib import Path
+
+
+def write_file(path, content):
+    file_path = Path(path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(content.strip() + "\n", encoding="utf-8")
+    print(f"Updated {file_path}")
+
+
+# Add heat source extractors
+hem_extractors_path = Path("ui/utils/hem_extractors.py")
+text = hem_extractors_path.read_text(encoding="utf-8")
+
+if "def extract_heat_source_wet_from_hem" not in text:
+    text += """
+
+def extract_heat_source_wet_from_hem(hem_json_path: Path) -> dict:
+    \"\"\"Extract HeatSourceWet from uploaded HEM JSON.\"\"\"
+    hem_input = load_json_file(hem_json_path)
+    return hem_input.get("HeatSourceWet", {})
+
+
+def summarise_heat_source_wet(heat_source_wet: dict) -> list[dict]:
+    \"\"\"Create a summary table for HEM HeatSourceWet entries.\"\"\"
+    rows = []
+
+    for name, source in (heat_source_wet or {}).items():
+        if not isinstance(source, dict):
+            continue
+
+        source_type = source.get("type", "Unknown")
+
+        row = {
+            "name": name,
+            "type": source_type,
+            "energy_supply": source.get("EnergySupply", ""),
+            "aux_energy_supply": source.get("EnergySupply_aux", ""),
+            "rated_power": source.get(
+                "rated_power",
+                source.get("power_max", source.get("rated_charge_power", "")),
+            ),
+            "efficiency_or_cop": "",
+            "notes": "",
+        }
+
+        if source_type == "Boiler":
+            row["efficiency_or_cop"] = source.get("efficiency_full_load", "")
+            row["notes"] = f"Part-load efficiency: {source.get('efficiency_part_load', '')}"
+
+        elif source_type == "HeatPump":
+            test_data = source.get("test_data_EN14825", [])
+            if test_data:
+                cops = [
+                    item.get("cop")
+                    for item in test_data
+                    if isinstance(item, dict) and item.get("cop") is not None
+                ]
+                capacities = [
+                    item.get("capacity")
+                    for item in test_data
+                    if isinstance(item, dict) and item.get("capacity") is not None
+                ]
+
+                if cops:
+                    row["efficiency_or_cop"] = round(sum(cops) / len(cops), 2)
+
+                if capacities:
+                    row["rated_power"] = max(capacities)
+
+                row["notes"] = f"EN14825 points: {len(test_data)}"
+
+            row["aux_energy_supply"] = "mains elec"
+
+        elif source_type == "HIU":
+            row["rated_power"] = source.get("power_max", "")
+            row["notes"] = f"Daily loss: {source.get('HIU_daily_loss', '')}"
+
+        elif source_type == "HeatBattery":
+            row["rated_power"] = source.get("rated_charge_power", "")
+            row["notes"] = f"Battery type: {source.get('battery_type', '')}"
+
+        rows.append(row)
+
+    return rows
+"""
+
+hem_extractors_path.write_text(text, encoding="utf-8")
+print("Patched ui/utils/hem_extractors.py")
+
+
+# Patch full_case_builder.py
+full_case_path = Path("ui/utils/full_case_builder.py")
+text = full_case_path.read_text(encoding="utf-8")
+
+if "def apply_heat_source_wet_to_case" not in text:
+    marker = """def apply_space_heating_to_case(hem_input: dict, space_heat_systems: dict) -> dict:
+    if isinstance(space_heat_systems, dict) and space_heat_systems:
+        hem_input["SpaceHeatSystem"] = deepcopy(space_heat_systems)
+
+    return hem_input
+"""
+
+    replacement = marker + """
+
+def apply_heat_source_wet_to_case(hem_input: dict, heat_source_wet: dict) -> dict:
+    \"\"\"Apply saved HeatSourceWet dictionary to a HEM input.\"\"\"
+    if isinstance(heat_source_wet, dict) and heat_source_wet:
+        hem_input["HeatSourceWet"] = deepcopy(heat_source_wet)
+
+    return hem_input
+"""
+
+    if marker not in text:
+        raise RuntimeError("Could not find apply_space_heating_to_case in full_case_builder.py")
+
+    text = text.replace(marker, replacement, 1)
+
+if 'heat_source_wet = project_sections.get("heat_source_wet", {})' not in text:
+    text = text.replace(
+        '    space_heat_systems = project_sections.get("space_heat_systems", {})\n',
+        '    space_heat_systems = project_sections.get("space_heat_systems", {})\n    heat_source_wet = project_sections.get("heat_source_wet", {})\n',
+        1,
+    )
+
+if "hem_input = apply_heat_source_wet_to_case(" not in text:
+    text = text.replace(
+        """    hem_input = apply_space_heating_to_case(
+        hem_input=hem_input,
+        space_heat_systems=space_heat_systems,
+    )
+""",
+        """    hem_input = apply_space_heating_to_case(
+        hem_input=hem_input,
+        space_heat_systems=space_heat_systems,
+    )
+
+    hem_input = apply_heat_source_wet_to_case(
+        hem_input=hem_input,
+        heat_source_wet=heat_source_wet,
+    )
+""",
+        1,
+    )
+
+full_case_path.write_text(text, encoding="utf-8")
+print("Patched ui/utils/full_case_builder.py")
+
+
+# Patch validation
+validation_path = Path("ui/utils/project_validation.py")
+text = validation_path.read_text(encoding="utf-8")
+
+if '"heat_source_wet": "Wet heat sources"' not in text:
+    text = text.replace(
+        '''        "space_heat_systems": "Heating systems",
+''',
+        '''        "space_heat_systems": "Heating systems",
+        "heat_source_wet": "Wet heat sources",
+''',
+        1,
+    )
+
+validation_path.write_text(text, encoding="utf-8")
+print("Patched ui/utils/project_validation.py")
+
+
+# Rewrite Heating & Cooling page with HeatSourceWet support while keeping existing cooling UI
+write_file(
+    "ui/pages/6_Heating_Cooling_Systems.py",
+    """
 import json
 import sys
 from pathlib import Path
@@ -426,3 +597,82 @@ with st.expander("Developer/debug: view saved HVAC data", expanded=False):
 
     st.subheader("Cooling")
     st.json(get_project_data_section("cooling_systems", {}) or {})
+""",
+)
+
+
+# Patch Run HEM results summary status
+run_page = Path("ui/pages/10_Run_HEM_Results.py")
+text = run_page.read_text(encoding="utf-8")
+
+if 'heat_source_wet = project_data.get("heat_source_wet", {})' not in text:
+    text = text.replace(
+        'space_heat_systems = project_data.get("space_heat_systems", {})\n',
+        'space_heat_systems = project_data.get("space_heat_systems", {})\nheat_source_wet = project_data.get("heat_source_wet", {})\n',
+        1,
+    )
+
+if 'st.metric("Heat sources", len(heat_source_wet)' not in text:
+    text = text.replace(
+        '''with col4:
+    st.metric(
+        "Heating",
+        len(space_heat_systems) if isinstance(space_heat_systems, dict) else 0,
+    )
+
+with col5:
+    st.metric("Hot water", "Yes" if hot_water else "No")
+''',
+        '''with col4:
+    st.metric(
+        "Heating",
+        len(space_heat_systems) if isinstance(space_heat_systems, dict) else 0,
+    )
+
+with col5:
+    st.metric(
+        "Heat sources",
+        len(heat_source_wet) if isinstance(heat_source_wet, dict) else 0,
+    )
+''',
+        1,
+    )
+
+    text = text.replace(
+        '''with col6:
+    st.metric("Gains/controls", "Yes" if gains_controls else "No")
+''',
+        '''with col6:
+    st.metric("Hot water", "Yes" if hot_water else "No")
+''',
+        1,
+    )
+
+    text = text.replace(
+        '''with col7:
+    st.metric("Energy supply", "Yes" if energy_supply else "No")
+''',
+        '''with col7:
+    st.metric("Gains/controls", "Yes" if gains_controls else "No")
+''',
+        1,
+    )
+
+    text = text.replace(
+        '''with col8:
+    st.metric(
+        "Weather",
+        "Yes" if weather_settings.get("weather_file") else "Default",
+    )
+''',
+        '''with col8:
+    st.metric("Energy supply", "Yes" if energy_supply else "No")
+''',
+        1,
+    )
+
+run_page.write_text(text, encoding="utf-8")
+print("Patched ui/pages/10_Run_HEM_Results.py")
+
+
+print("Batch V1 complete.")
