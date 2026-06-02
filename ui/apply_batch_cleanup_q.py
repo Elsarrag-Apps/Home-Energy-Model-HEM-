@@ -1,3 +1,16 @@
+from pathlib import Path
+
+
+def write_file(path, content):
+    file_path = Path(path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(content.strip() + "\n", encoding="utf-8")
+    print(f"Updated {file_path}")
+
+
+write_file(
+    "ui/pages/10_Run_HEM_Results.py",
+    """
 import json
 import sys
 from pathlib import Path
@@ -121,7 +134,7 @@ def build_project_report_text(
     else:
         lines.append("HEM summary output: not available yet.")
 
-    return "\n".join(lines)
+    return "\\n".join(lines)
 
 
 st.header("1. Project build summary")
@@ -306,18 +319,12 @@ else:
 
                     st.session_state["last_results_comparison"] = comparison
 
-                    col1, col2, col3, col4, col5 = st.columns(5)
+                    col1, col2, col3, col4 = st.columns(4)
 
                     space_heat = next(
                         item
                         for item in comparison
                         if item["metric"] == "Space heat demand"
-                    )
-
-                    space_cool = next(
-                        item
-                        for item in comparison
-                        if item["metric"] == "Space cool demand"
                     )
 
                     peak_elec = next(
@@ -347,26 +354,19 @@ else:
 
                     with col2:
                         st.metric(
-                            "Space cool demand",
-                            f"{format_number(space_cool['generated_value'])} {space_cool['unit']}",
-                            f"{format_number(space_cool['difference'])} {space_cool['unit']}",
-                        )
-
-                    with col3:
-                        st.metric(
                             "Peak electricity",
                             f"{format_number(peak_elec['generated_value'])} {peak_elec['unit']}",
                             f"{format_number(peak_elec['difference'])} {peak_elec['unit']}",
                         )
 
-                    with col4:
+                    with col3:
                         st.metric(
                             "Delivered energy",
                             f"{format_number(delivered['generated_value'])} {delivered['unit']}",
                             f"{format_number(delivered['difference'])} {delivered['unit']}",
                         )
 
-                    with col5:
+                    with col4:
                         st.metric(
                             "Mechanical ventilation",
                             f"{format_number(mech_vent['generated_value'])} {mech_vent['unit']}",
@@ -476,3 +476,7 @@ with st.expander("Preview simple project report", expanded=False):
 
 with st.expander("Developer/debug: saved project data used for this run", expanded=False):
     st.json(project_data)
+""",
+)
+
+print("Batch Q complete.")
