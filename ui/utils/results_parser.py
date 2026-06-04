@@ -294,3 +294,161 @@ def extract_delivered_energy_rows(summary_csv_path):
 def extract_hot_water_energy_by_names(summary_csv_path, dhw_end_use_names):
     """Return DHW energy using explicit DHW end-use names."""
     return extract_delivered_energy_end_use(summary_csv_path, dhw_end_use_names)
+
+
+
+def read_core_results_dataframe(results_csv_path):
+    """Read HEM detailed core results CSV and remove the units row."""
+    import pandas as pd
+
+    path = Path(results_csv_path)
+
+    if not path.exists():
+        return pd.DataFrame()
+
+    df = pd.read_csv(path)
+
+    if df.empty:
+        return df
+
+    # HEM result CSV usually has a first row containing units such as [kWh].
+    if str(df.iloc[0].get("Timestep", "")).startswith("["):
+        df = df.iloc[1:].copy()
+
+    for col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors="ignore")
+
+    if "Timestep" in df.columns:
+        df["Timestep"] = pd.to_numeric(df["Timestep"], errors="coerce")
+
+    return df.reset_index(drop=True)
+
+
+def get_delivered_energy_chart_rows(summary_csv_path):
+    """Return delivered energy end-use rows suitable for charting."""
+    rows = extract_delivered_energy_rows(summary_csv_path)
+
+    clean_rows = []
+
+    for row in rows:
+        end_use = row.get("end_use", "")
+        value = row.get("total_kwh_m2", 0.0)
+
+        if end_use and value is not None:
+            clean_rows.append(
+                {
+                    "End use": end_use,
+                    "Delivered energy (kWh/m2)": value,
+                }
+            )
+
+    return clean_rows
+
+
+def find_columns_containing(df, patterns):
+    """Return columns containing any supplied case-insensitive patterns."""
+    if df is None or df.empty:
+        return []
+
+    if isinstance(patterns, str):
+        patterns = [patterns]
+
+    patterns = [p.lower() for p in patterns]
+
+    cols = []
+
+    for col in df.columns:
+        col_lower = str(col).lower()
+
+        if any(pattern in col_lower for pattern in patterns):
+            cols.append(col)
+
+    return cols
+
+
+
+def format_small_number(value, decimals=6):
+    """Format small energy values without hiding them as 0.000."""
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        return "0.000000"
+
+    if abs(value) < 0.001 and value != 0:
+        return f"{value:.{decimals}f}"
+
+    return f"{value:.3f}"
+
+
+def get_simulation_summary_from_case(case_json_path):
+    """Return simulation period summary from generated HEM input."""
+    import json
+
+    path = Path(case_json_path)
+
+    if not path.exists():
+        return {
+            "start": None,
+            "end": None,
+            "step": None,
+            "timesteps": 0,
+            "is_annual": False,
+            "message": "Generated HEM input not found.",
+        }
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {
+            "start": None,
+            "end": None,
+            "step": None,
+            "timesteps": 0,
+            "is_annual": False,
+            "message": "Could not read generated HEM input.",
+        }
+
+    sim = data.get("SimulationTime", {}) or {}
+    external = data.get("ExternalConditions", {}) or {}
+
+    start = sim.get("start")
+    end = sim.get("end")
+    step = sim.get("step", 1)
+
+    try:
+        timesteps = int((float(end) - float(start)) / float(step))
+    except Exception:
+        timesteps = 0
+
+    weather_lengths = {}
+
+    for key in [
+        "air_temperatures",
+        "wind_speeds",
+        "diffuse_horizontal_radiation",
+        "direct_beam_radiation",
+    ]:
+        value = external.get(key)
+
+        if isinstance(value, list):
+            weather_lengths[key] = len(value)
+
+    is_annual = timesteps >= 8760
+
+    if is_annual:
+        message = "Annual or near-annual simulation period."
+    else:
+        message = (
+            f"Short test-period simulation: {timesteps} timestep(s). "
+            "This is not an annual result."
+        )
+
+    return {
+        "start": start,
+        "end": end,
+        "step": step,
+        "timesteps": timesteps,
+        "is_annual": is_annual,
+        "weather_lengths": weather_lengths,
+        "message": message,
+    }

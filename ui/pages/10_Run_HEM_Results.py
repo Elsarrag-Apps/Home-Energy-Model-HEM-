@@ -2,6 +2,7 @@ import json
 import sys
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -17,7 +18,7 @@ from project_validation import (
     split_messages,
     validate_project_before_run,
 )
-from results_parser import compare_summary_metrics, extract_delivered_energy_rows, extract_hot_water_energy, extract_hot_water_energy_by_names, format_number
+from results_parser import compare_summary_metrics, extract_delivered_energy_rows, extract_hot_water_energy, extract_hot_water_energy_by_names, find_columns_containing, format_number, format_small_number, get_delivered_energy_chart_rows, get_simulation_summary_from_case, read_core_results_dataframe
 
 
 st.set_page_config(
@@ -38,6 +39,11 @@ GENERATED_FULL_CASE_PATH = Path("ui/temp/generated_full_project_case.json")
 GENERATED_SUMMARY_PATH = Path(
     "ui/temp/generated_full_project_case__results/"
     "generated_full_project_case__core__results_summary.csv"
+)
+
+GENERATED_CORE_RESULTS_PATH = Path(
+    "ui/temp/generated_full_project_case__results/"
+    "generated_full_project_case__core__results.csv"
 )
 
 BASE_SUMMARY_PATH = Path(
@@ -140,7 +146,7 @@ def build_project_report_text(
     )
     lines.append(f"Thermal bridges: {len(thermal_bridges)}")
     lines.append(
-        f"Heating systems: {len(space_heat_systems) if isinstance(space_heat_systems, dict) else 0}"
+        f"Heating systems: {1 if space_heat_systems else 0}"
     )
     lines.append("Hot water: " + ("saved" if hot_water else "not saved"))
     lines.append("Internal gains / controls: " + ("saved" if gains_controls else "not saved"))
@@ -169,11 +175,11 @@ fabric_rows = project_data.get("fabric_elements", [])
 ventilation = project_data.get("ventilation", {})
 thermal_bridges = project_data.get("thermal_bridges", [])
 weather_settings = project_data.get("weather_simulation", {})
-space_heat_systems = project_data.get("space_heat_systems", {})
-heat_source_wet = project_data.get("heat_source_wet", {})
+space_heat_systems = project_data.get("space_heat_systems", {}) or project_data.get("heating_form", {})
+heat_source_wet = project_data.get("heat_source_wet", {}) or project_data.get("heating_form", {})
 hot_water = project_data.get("hot_water", {})
-gains_controls = project_data.get("gains_controls", {})
-energy_supply = project_data.get("energy_supply", {})
+gains_controls = project_data.get("gains_controls", {}) or project_data.get("internal_gains_form", {})
+energy_supply = project_data.get("energy_supply", {}) or project_data.get("energy_supply_form", {}) or project_data.get("renewables_battery", {})
 
 if project_setup:
     st.subheader("Project")
@@ -210,17 +216,17 @@ with col3:
 with col4:
     st.metric(
         "Heating",
-        len(space_heat_systems) if isinstance(space_heat_systems, dict) else 0,
+        1 if space_heat_systems else 0,
     )
 
 with col5:
     st.metric(
         "Heat sources",
-        len(heat_source_wet) if isinstance(heat_source_wet, dict) else 0,
+        1 if heat_source_wet else 0,
     )
 
 with col6:
-    st.metric("Hot water", "Yes" if hot_water else "No")
+    st.metric("Hot water", "Yes" if (hot_water or project_data.get("hot_water_form") or project_data.get("heating_hot_water") or project_data.get("hot_water") or project_data.get("HotWaterSource")) else "No")
 
 with col7:
     st.metric("Gains/controls", "Yes" if gains_controls else "No")
@@ -336,7 +342,7 @@ else:
 
                 st.session_state["last_hem_summary_text"] = summary_text
 
-                st.subheader("Results comparison")
+                st.subheader("Results comparison for current simulation period")
 
                 if BASE_SUMMARY_PATH.exists():
                     comparison = compare_summary_metrics(
@@ -436,8 +442,8 @@ else:
                     with col6:
                         st.metric(
                             "Mechanical ventilation",
-                            f"{format_number(mech_vent['generated_value'])} {mech_vent['unit']}",
-                            f"{format_number(mech_vent['difference'])} {mech_vent['unit']}",
+                            f"{format_small_number(mech_vent['generated_value'])} {mech_vent['unit']}",
+                            f"{format_small_number(mech_vent['difference'])} {mech_vent['unit']}",
                         )
 
                     with st.expander("Detailed comparison table", expanded=False):
@@ -453,15 +459,24 @@ else:
                         "Run a baseline case first if comparison is needed."
                     )
 
-                with st.expander("Delivered energy by end-use", expanded=False):
+                with st.expander("Delivered energy by end-use", expanded=True):
                     delivered_rows = extract_delivered_energy_rows(GENERATED_SUMMARY_PATH)
 
                     if delivered_rows:
+                        delivered_df = pd.DataFrame(delivered_rows)
+
                         st.dataframe(
-                            delivered_rows,
+                            delivered_df,
                             use_container_width=True,
                             hide_index=True,
                         )
+
+                        chart_rows = get_delivered_energy_chart_rows(GENERATED_SUMMARY_PATH)
+
+                        if chart_rows:
+                            chart_df = pd.DataFrame(chart_rows).set_index("End use")
+                            st.bar_chart(chart_df)
+
                     else:
                         st.write("No delivered-energy end-use rows found.")
 
@@ -469,6 +484,124 @@ else:
                         "Hot water energy is estimated from the generated HotWaterSource "
                         "heat-source names plus common DHW rows such as IES and immersion."
                     )
+
+                st.subheader("Hourly / timestep results")
+
+                detailed_df = read_core_results_dataframe(GENERATED_CORE_RESULTS_PATH)
+
+                if detailed_df.empty:
+                    st.info("Detailed timestep results CSV was not found.")
+                else:
+                    profile_tabs = st.tabs(
+                        [
+                            "Energy profiles",
+                            "Zone temperatures",
+                            "Hot water profiles",
+                            "Raw timestep data",
+                        ]
+                    )
+
+                    with profile_tabs[0]:
+                        energy_columns = [
+                            col
+                            for col in detailed_df.columns
+                            if str(col).startswith("mains elec:")
+                            and any(
+                                key in str(col).lower()
+                                for key in [
+                                    "main",
+                                    "ies",
+                                    "heat pump",
+                                    "lighting",
+                                    "cooking",
+                                    "mech",
+                                    "total",
+                                ]
+                            )
+                        ]
+
+                        if energy_columns:
+                            energy_df = detailed_df[["Timestep"] + energy_columns].set_index("Timestep")
+                            st.line_chart(energy_df)
+                        else:
+                            st.info("No energy profile columns found.")
+
+                    with profile_tabs[1]:
+                        st.markdown("#### Zone temperatures")
+                        temperature_columns = find_columns_containing(
+                            detailed_df,
+                            [
+                                "operative temp",
+                                "internal air temp",
+                            ],
+                        )
+
+                        if temperature_columns:
+                            temperature_df = detailed_df[
+                                ["Timestep"] + temperature_columns
+                            ].set_index("Timestep")
+                            st.line_chart(temperature_df)
+                        else:
+                            st.info("No zone temperature columns found.")
+
+                        st.markdown("#### Zone gains")
+                        gain_columns = find_columns_containing(
+                            detailed_df,
+                            [
+                                "solar gains",
+                                "internal gains",
+                            ],
+                        )
+
+                        if gain_columns:
+                            gains_df = detailed_df[
+                                ["Timestep"] + gain_columns
+                            ].set_index("Timestep")
+                            st.line_chart(gains_df)
+                        else:
+                            st.info("No zone gain columns found.")
+
+                        st.markdown("#### Space heating / cooling demand")
+                        demand_columns = find_columns_containing(
+                            detailed_df,
+                            [
+                                "space heat demand",
+                                "space cool demand",
+                            ],
+                        )
+
+                        if demand_columns:
+                            demand_df = detailed_df[
+                                ["Timestep"] + demand_columns
+                            ].set_index("Timestep")
+                            st.line_chart(demand_df)
+                        else:
+                            st.info("No heating/cooling demand columns found.")
+
+                    with profile_tabs[2]:
+                        hw_columns = find_columns_containing(
+                            detailed_df,
+                            [
+                                "hot water",
+                                "storage losses",
+                                "pipework losses",
+                                "number of events",
+                                "total event duration",
+                            ],
+                        )
+
+                        if hw_columns:
+                            hw_df = detailed_df[["Timestep"] + hw_columns].set_index("Timestep")
+                            st.line_chart(hw_df)
+                        else:
+                            st.info("No hot-water timestep columns found.")
+
+                    with profile_tabs[3]:
+                        st.dataframe(
+                            detailed_df,
+                            use_container_width=True,
+                            hide_index=True,
+                        )
 
                 with st.expander("View full HEM summary output", expanded=False):
                     st.text(summary_text)

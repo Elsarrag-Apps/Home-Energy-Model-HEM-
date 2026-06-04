@@ -132,12 +132,21 @@ with st.form("weather_simulation_form"):
             "Custom": int(saved_settings.get("simulation_hours", 24)),
         }[run_type]
 
-        simulation_hours = st.number_input(
-            "Simulation hours",
-            min_value=1,
-            value=int(saved_settings.get("simulation_hours", default_hours)),
-            step=1,
-        )
+        if run_type == "Annual run":
+            simulation_hours = 8760
+            st.metric("Simulation hours", simulation_hours)
+            st.caption("Annual run is fixed at 8760 hourly timesteps.")
+        elif run_type in ["24-hour test", "168-hour test"]:
+            simulation_hours = default_hours
+            st.metric("Simulation hours", simulation_hours)
+            st.caption("Test run length is fixed by the selected run type.")
+        else:
+            simulation_hours = st.number_input(
+                "Simulation hours",
+                min_value=1,
+                value=int(saved_settings.get("simulation_hours", default_hours)),
+                step=1,
+            )
 
         output_prefix = st.text_input(
             "Output prefix",

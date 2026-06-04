@@ -1,7 +1,9 @@
+from hem_mappers import apply_professional_mappers_to_case
 import json
 from copy import deepcopy
 from pathlib import Path
 
+from weather_mapper import apply_weather_simulation_to_case
 from hot_water_mapper import apply_form_hot_water_to_hem_input
 from hvac_mapper import apply_form_heating_to_hem_input, apply_space_cooling_to_hem_input
 from input_builder import (
@@ -302,6 +304,295 @@ def apply_heat_source_wet_to_case(hem_input: dict, heat_source_wet: dict) -> dic
     return hem_input
 
 
+
+def clean_transparent_elements_in_case(hem_input: dict) -> dict:
+    """Remove fields rejected by HEM for BuildingElementTransparent."""
+    zones = hem_input.get("Zone", {})
+
+    if not isinstance(zones, dict):
+        return hem_input
+
+    for zone in zones.values():
+        if not isinstance(zone, dict):
+            continue
+
+        elements = zone.get("BuildingElement", {})
+
+        if not isinstance(elements, dict):
+            continue
+
+        for element in elements.values():
+            if not isinstance(element, dict):
+                continue
+
+            if element.get("type") == "BuildingElementTransparent":
+                element.pop("area", None)
+                element.pop("areal_heat_capacity", None)
+                element.pop("mass_distribution_class", None)
+                element.pop("solar_absorption_coeff", None)
+
+    return hem_input
+
+
+
+def extend_schedule_values(values, hours):
+    """Expand HEM schedule lists to cover simulation length."""
+    if not isinstance(values, list):
+        return values
+
+    expanded = []
+
+    for item in values:
+        if isinstance(item, dict) and "repeat" in item and "value" in item:
+            repeat = int(item.get("repeat", 1) or 1)
+            expanded.extend([item.get("value")] * repeat)
+        else:
+            expanded.append(item)
+
+    if not expanded:
+        return values
+
+    if len(expanded) < hours:
+        repeated = []
+        while len(repeated) < hours:
+            repeated.extend(expanded)
+        expanded = repeated[:hours]
+    else:
+        expanded = expanded[:hours]
+
+    # Compress back to a single repeat block if constant, otherwise keep explicit list.
+    if expanded and all(value == expanded[0] for value in expanded):
+        return [{"value": expanded[0], "repeat": hours}]
+
+    return expanded
+
+
+def normalise_mechanical_ventilation_schema(hem_input: dict) -> dict:
+    """Convert app-style mechanical ventilation data to HEM MechanicalVentilation schema."""
+    iv = hem_input.get("InfiltrationVentilation", {})
+
+    if not isinstance(iv, dict):
+        return hem_input
+
+    mech = iv.get("MechanicalVentilation")
+
+    if not isinstance(mech, dict) or not mech:
+        return hem_input
+
+    # Already in HEM shape.
+    if "mech_vent_1" in mech:
+        return hem_input
+
+    vent_type = mech.get("vent_type", "None")
+
+    if str(vent_type).lower() in ["none", "natural", ""]:
+        iv.pop("MechanicalVentilation", None)
+        return hem_input
+    design_flow = float(mech.get("design_flow_m3_h", mech.get("design_flow_l_s", mech.get("design_outdoor_air_flow_rate", 0.0))) or 0.0)
+    sfp = float(mech.get("sfp_w_l_s", mech.get("SFP", 0.0)) or 0.0)
+
+    if design_flow <= 0 or sfp <= 0:
+        iv.pop("MechanicalVentilation", None)
+        return hem_input
+
+    hem_mech = {
+        "mech_vent_1": {
+            "type": "MechanicalVentilation",
+            "vent_type": vent_type,
+            "EnergySupply": mech.get("energy_supply", mech.get("EnergySupply", "mains elec")),
+            "design_outdoor_air_flow_rate": design_flow,
+            "SFP": sfp,
+            "SFP_in_use_factor": float(mech.get("sfp_in_use_factor", mech.get("SFP_in_use_factor", 1.0)) or 1.0),
+        }
+    }
+
+    if str(vent_type).upper() == "MVHR":
+        eff = float(mech.get("mvhr_efficiency_percent", mech.get("mvhr_eff", 80.0)) or 80.0)
+        if eff > 1.0:
+            eff = eff / 100.0
+        hem_mech["mech_vent_1"]["mvhr_eff"] = eff
+
+    iv["MechanicalVentilation"] = hem_mech
+
+    hem_input.setdefault("EnergySupply", {})
+    hem_input["EnergySupply"].setdefault(
+        hem_mech["mech_vent_1"]["EnergySupply"],
+        {"fuel": "electricity", "is_export_capable": True},
+    )
+
+    return hem_input
+
+
+def ensure_mechanical_ventilation_in_case(hem_input: dict, ventilation_data: dict) -> dict:
+    """Ensure saved mechanical ventilation is written into InfiltrationVentilation."""
+    if not isinstance(ventilation_data, dict):
+        return hem_input
+
+    mech = None
+
+    for key in ["MechanicalVentilation", "mechanical_ventilation", "mech_vent", "mechanical_ventilation_json"]:
+        value = ventilation_data.get(key)
+        if isinstance(value, dict) and value:
+            mech = value
+            break
+
+    # Form-style fallback keys.
+    vent_type = ventilation_data.get("mechanical_ventilation_type") or ventilation_data.get("vent_type")
+    if mech is None and vent_type and str(vent_type).lower() not in ["none", "natural", "no mechanical ventilation"]:
+        mech = {
+            "mech_vent_1": {
+                "vent_type": vent_type,
+                "EnergySupply": ventilation_data.get("energy_supply", "mains elec"),
+                "design_outdoor_air_flow_rate": float(ventilation_data.get("design_outdoor_air_flow_rate", 90.0) or 90.0),
+                "SFP": float(ventilation_data.get("SFP", ventilation_data.get("sfp", 0.5)) or 0.5),
+                "SFP_in_use_factor": float(ventilation_data.get("SFP_in_use_factor", 1.0) or 1.0),
+            }
+        }
+        if str(vent_type).upper() == "MVHR":
+            mech["mech_vent_1"]["mvhr_eff"] = float(ventilation_data.get("mvhr_eff", 0.85) or 0.85)
+
+    if not mech:
+        return hem_input
+
+    hem_input.setdefault("InfiltrationVentilation", {})
+    hem_input["InfiltrationVentilation"]["MechanicalVentilation"] = mech
+
+    hem_input.setdefault("EnergySupply", {})
+    hem_input["EnergySupply"].setdefault("mains elec", {"fuel": "electricity", "is_export_capable": True})
+
+    return hem_input
+
+
+def extend_all_schedules_in_case(hem_input: dict) -> dict:
+    """Ensure Control, InternalGains and ApplianceGains schedules cover the simulation length."""
+    sim = hem_input.get("SimulationTime", {}) or {}
+
+    try:
+        hours = int((float(sim.get("end", 0)) - float(sim.get("start", 0))) / float(sim.get("step", 1)))
+    except Exception:
+        hours = 0
+
+    if hours <= 0:
+        return hem_input
+
+    for section_name in ["Control", "InternalGains", "ApplianceGains"]:
+        section = hem_input.get(section_name, {})
+
+        if not isinstance(section, dict):
+            continue
+
+        for item in section.values():
+            if not isinstance(item, dict):
+                continue
+
+            schedule = item.get("schedule")
+
+            if not isinstance(schedule, dict):
+                continue
+
+            for schedule_name, values in list(schedule.items()):
+                schedule[schedule_name] = extend_schedule_values(values, hours)
+
+            item.setdefault("start_day", 0)
+            item.setdefault("time_series_step", 1)
+
+    return hem_input
+
+
+def extend_cold_water_temperatures_in_case(hem_input: dict) -> dict:
+    """Ensure ColdWaterSource temperature arrays cover the simulation length."""
+    sim = hem_input.get("SimulationTime", {}) or {}
+
+    try:
+        hours = int((float(sim.get("end", 0)) - float(sim.get("start", 0))) / float(sim.get("step", 1)))
+    except Exception:
+        hours = 0
+
+    if hours <= 0:
+        return hem_input
+
+    cold_sources = hem_input.get("ColdWaterSource", {})
+
+    if not isinstance(cold_sources, dict):
+        return hem_input
+
+    for source in cold_sources.values():
+        if not isinstance(source, dict):
+            continue
+
+        temps = source.get("temperatures", [])
+
+        if not isinstance(temps, list):
+            temps = []
+
+        if not temps:
+            temps = [10.0]
+
+        if len(temps) < hours:
+            extended = []
+            while len(extended) < hours:
+                extended.extend(temps)
+            source["temperatures"] = extended[:hours]
+        else:
+            source["temperatures"] = temps[:hours]
+
+        source.setdefault("start_day", 0)
+        source.setdefault("time_series_step", 1)
+
+    return hem_input
+
+
+def clean_ground_elements_in_case(hem_input: dict) -> dict:
+    """Protect HEM validation from invalid generated ground-floor resistance values.
+
+    HEM rejects ground floors where the derived r_vi becomes <= 0. This can happen
+    when the simplified fabric UI writes an inconsistent u_value and
+    thermal_resistance_floor_construction combination. For now, if a ground element
+    has both values and they are clearly inconsistent, remove the explicit u_value
+    and let HEM use the construction inputs.
+    """
+    zones = hem_input.get("Zone", {})
+
+    if not isinstance(zones, dict):
+        return hem_input
+
+    for zone in zones.values():
+        if not isinstance(zone, dict):
+            continue
+
+        elements = zone.get("BuildingElement", {})
+
+        if not isinstance(elements, dict):
+            continue
+
+        for element_name, element in elements.items():
+            if not isinstance(element, dict):
+                continue
+
+            if element.get("type") != "BuildingElementGround":
+                continue
+
+            u_value = element.get("u_value")
+            r_floor = element.get("thermal_resistance_floor_construction")
+
+            try:
+                u_value_f = float(u_value)
+                r_floor_f = float(r_floor)
+            except (TypeError, ValueError):
+                continue
+
+            if u_value_f <= 0:
+                element.pop("u_value", None)
+                continue
+
+            # If 1/U is less than or equal to the supplied construction resistance,
+            # HEM's derived internal resistance can become zero or negative.
+            if (1.0 / u_value_f) <= r_floor_f:
+                element.pop("u_value", None)
+
+    return hem_input
+
+
 def apply_hot_water_to_case(hem_input: dict, hot_water_sections: dict) -> dict:
     if not isinstance(hot_water_sections, dict):
         return hem_input
@@ -360,6 +651,13 @@ def build_full_project_case(
     energy_supply = project_sections.get("energy_supply", {})
     cooling_systems = project_sections.get("cooling_systems", {})
 
+    weather_simulation = project_sections.get("weather_simulation", {})
+
+    hem_input = apply_weather_simulation_to_case(
+        hem_input=hem_input,
+        weather_simulation=weather_simulation,
+    )
+
     hem_input = apply_fabric_to_case(
         hem_input=hem_input,
         fabric_elements=fabric_elements,
@@ -409,6 +707,14 @@ def build_full_project_case(
         hot_water_data=hot_water_form,
     )
 
+    # Re-apply form heating after hot water and controls so the generated
+    # SpaceHeatSystem control reference is guaranteed to exist.
+    hem_input = apply_form_heating_to_hem_input(
+        hem_input=hem_input,
+        heating_data=heating_form,
+        zone_name="zone 1",
+    )
+
     hem_input = apply_energy_supply_to_case(
         hem_input=hem_input,
         energy_supply=energy_supply,
@@ -419,6 +725,44 @@ def build_full_project_case(
         cooling_data=cooling_systems,
         zone_name="zone 1",
     )
+
+    hem_input = ensure_mechanical_ventilation_in_case(hem_input, ventilation_data)
+
+    ventilation_data = project_sections.get("ventilation", {})
+    hem_input = ensure_mechanical_ventilation_in_case(hem_input, ventilation_data)
+
+    hem_input = clean_transparent_elements_in_case(hem_input)
+    hem_input = clean_ground_elements_in_case(hem_input)
+    hem_input = extend_cold_water_temperatures_in_case(hem_input)
+    hem_input = extend_all_schedules_in_case(hem_input)
+    hem_input = normalise_mechanical_ventilation_schema(hem_input)
+
+    iv = hem_input.get("InfiltrationVentilation", {})
+    if isinstance(iv, dict):
+        mv = iv.get("MechanicalVentilation", {})
+        if isinstance(mv, dict):
+            for item in mv.values():
+                if isinstance(item, dict):
+                    item.pop("type", None)
+
+    iv = hem_input.get("InfiltrationVentilation", {})
+    if isinstance(iv, dict):
+        mv = iv.get("MechanicalVentilation", {})
+        if isinstance(mv, dict):
+            for item in mv.values():
+                if isinstance(item, dict):
+                    item.pop("type", None)
+                    if str(item.get("vent_type", "")).upper() == "MVHR":
+                        item.setdefault("position_intake", {"mid_height_air_flow_path": 2.0, "orientation360": 0, "pitch": 90})
+                        item.setdefault("position_exhaust", {"mid_height_air_flow_path": 2.0, "orientation360": 180, "pitch": 90})
+                        item.setdefault("ductwork", [])
+                        item.setdefault("sup_air_flw_ctrl", "ODA")
+                        item.setdefault("sup_air_temp_ctrl", "NO_CTRL")
+                        item.setdefault("mvhr_location", "inside")
+
+    hem_input.pop("_ui_metadata", None)
+
+    hem_input = apply_professional_mappers_to_case(hem_input, project_sections)
 
     save_json(output_json_path, hem_input)
     return hem_input

@@ -1,3 +1,141 @@
+# -*- coding: utf-8 -*-
+from pathlib import Path
+
+
+def write(path, content):
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(content.strip() + "\n", encoding="utf-8")
+    print(f"Wrote {p}")
+
+
+# ---------------------------------------------------------------------
+# 1. Add energy-supply mapper to hem_mappers.py
+# ---------------------------------------------------------------------
+mapper = Path("ui/utils/hem_mappers.py")
+
+if not mapper.exists():
+    raise FileNotFoundError("ui/utils/hem_mappers.py not found. Apply AC1 first.")
+
+text = mapper.read_text(encoding="utf-8")
+
+if "def as_bool" not in text:
+    text = text.replace(
+        "def as_float(value, default=0.0):",
+        """def as_bool(value, default=False):
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return default
+    return str(value).strip().lower() in ["true", "yes", "1", "y"]
+
+
+def as_float(value, default=0.0):""",
+        1,
+    )
+
+if "def apply_energy_supply_to_hem_input" not in text:
+    text += r'''
+
+
+def apply_energy_supply_to_hem_input(hem_input: dict, project_data: dict) -> dict:
+    """Apply schema-safe HEM EnergySupply objects.
+
+    This mapper writes confirmed EnergySupply definitions only.
+    PV and battery settings are saved in the project for preview/reporting and
+    future detailed schema mapping, but are not injected into HEM here until
+    their exact HEM schema is verified.
+    """
+    form = project_data.get("energy_supply_form", {}) or {}
+
+    energy_supply = hem_input.get("EnergySupply", {})
+    if not isinstance(energy_supply, dict):
+        energy_supply = {}
+
+    include_mains_elec = as_bool(form.get("include_mains_elec", True), True)
+    export_capable = as_bool(form.get("electricity_export_capable", True), True)
+
+    if include_mains_elec:
+        energy_supply["mains elec"] = {
+            "fuel": "electricity",
+            "is_export_capable": export_capable,
+        }
+
+    if as_bool(form.get("include_mains_gas", False), False):
+        energy_supply["mains gas"] = {
+            "fuel": "mains_gas",
+            "is_export_capable": False,
+        }
+
+    if as_bool(form.get("include_lpg_bulk", False), False):
+        energy_supply["LPG bulk"] = {
+            "fuel": "LPG_bulk",
+            "is_export_capable": False,
+        }
+
+    if as_bool(form.get("include_lpg_bottled", False), False):
+        energy_supply["LPG bottled"] = {
+            "fuel": "LPG_bottled",
+            "is_export_capable": False,
+        }
+
+    if as_bool(form.get("include_heat_network", False), False):
+        energy_supply["heat network"] = {
+            "fuel": "custom",
+            "is_export_capable": False,
+        }
+
+    # Preserve special HEM pseudo-supplies when already present.
+    if "_unmet_demand" in energy_supply:
+        energy_supply["_unmet_demand"] = energy_supply["_unmet_demand"]
+
+    if "_energy_from_environment" in energy_supply:
+        energy_supply["_energy_from_environment"] = energy_supply["_energy_from_environment"]
+
+    hem_input["EnergySupply"] = energy_supply
+    return hem_input
+'''
+
+old_hook = """def apply_professional_mappers_to_case(hem_input: dict, project_data: dict) -> dict:
+    hem_input = apply_internal_gains_to_hem_input(hem_input, project_data)
+    hem_input = apply_ventilation_to_hem_input(hem_input, project_data)
+    return hem_input
+"""
+
+new_hook = """def apply_professional_mappers_to_case(hem_input: dict, project_data: dict) -> dict:
+    hem_input = apply_energy_supply_to_hem_input(hem_input, project_data)
+    hem_input = apply_internal_gains_to_hem_input(hem_input, project_data)
+    hem_input = apply_ventilation_to_hem_input(hem_input, project_data)
+    return hem_input
+"""
+
+if old_hook in text:
+    text = text.replace(old_hook, new_hook)
+elif "apply_energy_supply_to_hem_input(hem_input, project_data)" not in text:
+    old_hook_2 = """def apply_professional_mappers_to_case(hem_input: dict, project_data: dict) -> dict:
+    hem_input = apply_ventilation_to_hem_input(hem_input, project_data)
+    return hem_input
+"""
+    new_hook_2 = """def apply_professional_mappers_to_case(hem_input: dict, project_data: dict) -> dict:
+    hem_input = apply_energy_supply_to_hem_input(hem_input, project_data)
+    hem_input = apply_ventilation_to_hem_input(hem_input, project_data)
+    return hem_input
+"""
+    if old_hook_2 in text:
+        text = text.replace(old_hook_2, new_hook_2)
+    else:
+        raise RuntimeError("Could not patch apply_professional_mappers_to_case in hem_mappers.py")
+
+mapper.write_text(text, encoding="utf-8")
+print("Patched hem_mappers.py with energy supply mapper.")
+
+
+# ---------------------------------------------------------------------
+# 2. Replace Energy Supply page with comprehensive UI
+# ---------------------------------------------------------------------
+write(
+    "ui/pages/9_Energy_Supply_PV_Battery.py",
+    r'''
 import sys
 from pathlib import Path
 
@@ -363,3 +501,7 @@ st.info(
 
 with st.expander("Saved energy supply form", expanded=False):
     st.json(current)
+''',
+)
+
+print("AC3 complete.")

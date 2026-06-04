@@ -282,7 +282,6 @@ def build_direct_electric_heating_system(heating_data: dict) -> dict:
             "frac_convective": safe_float(heating_data.get("frac_convective"), 0.4),
             "Control": control_name,
             "EnergySupply": heating_data.get("direct_electric_energy_supply", "mains elec"),
-            "Zone": zone_name,
         }
     }
 

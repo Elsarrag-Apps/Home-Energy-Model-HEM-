@@ -446,3 +446,21 @@ def build_generated_fabric_input(
         json.dump(hem_input, f, indent=2)
 
     return hem_input
+
+
+def clean_building_element_for_hem(element: dict) -> dict:
+    """Remove fields that are not valid for specific HEM BuildingElement types."""
+    if not isinstance(element, dict):
+        return element
+
+    element_type = element.get("type", "")
+
+    if element_type == "BuildingElementTransparent":
+        # Transparent elements calculate area from height and width.
+        # HEM validator rejects these opaque/summary fields.
+        element.pop("area", None)
+        element.pop("areal_heat_capacity", None)
+        element.pop("mass_distribution_class", None)
+        element.pop("solar_absorption_coeff", None)
+
+    return element

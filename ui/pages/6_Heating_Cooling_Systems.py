@@ -201,10 +201,14 @@ with st.form("heating_form"):
                 index=0,
             )
 
+            saved_hp_cop = float(saved_heating_form.get("heat_pump_nominal_cop", 3.2) or 3.2)
+            if saved_hp_cop < 0.1:
+                saved_hp_cop = 3.2
+
             heat_pump_nominal_cop = st.number_input(
                 "Nominal COP",
                 min_value=0.1,
-                value=float(saved_heating_form.get("heat_pump_nominal_cop", 3.2)),
+                value=saved_hp_cop,
                 step=0.1,
             )
 
@@ -432,10 +436,12 @@ with st.form("cooling_form"):
             step=0.5,
         )
 
+        saved_cooling_cop = float(saved_cooling.get("cooling_cop", 3.0) or 3.0)
+
         cooling_cop = st.number_input(
             "Cooling COP / EER",
             min_value=0.0,
-            value=float(saved_cooling.get("cooling_cop", 3.0)),
+            value=saved_cooling_cop,
             step=0.1,
         )
 

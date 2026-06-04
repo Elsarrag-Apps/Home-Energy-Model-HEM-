@@ -1,7 +1,7 @@
-import json
 import sys
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -9,154 +9,189 @@ UI_DIR = CURRENT_DIR.parent
 UTILS_DIR = UI_DIR / "utils"
 sys.path.append(str(UTILS_DIR))
 
-from hem_extractors import (
-    extract_gains_controls_sections_from_hem,
-    summarise_gains_controls_sections,
-)
-from project_store import get_project_data_section, update_project_data
+from project_store import get_active_project, get_project_data_section, update_project_data
 
 
-st.set_page_config(
-    page_title="Internal Gains & Controls",
-    layout="wide",
-)
+st.set_page_config(page_title="Internal Gains & Controls", layout="wide")
 
-st.title("Internal Gains, Appliances, Controls & Events")
+st.title("Internal Gains & Controls")
 
 st.write(
-    "Review and edit the internal gains, appliance gains, controls and events "
-    "loaded from the active HEM case. For this first connected version, the "
-    "official HEM JSON structure is preserved."
+    "Configure HEM InternalGains and ApplianceGains using form inputs. "
+    "The app creates annual schedules from a 24-hour domestic profile."
 )
 
-BASE_JSON_PATH = Path("ui/temp/active_hem_input.json")
+active_project = get_active_project()
 
-if not BASE_JSON_PATH.exists():
-    st.error(
-        "No active HEM input found. Go to the Home page and upload/load a HEM JSON first."
-    )
-    st.stop()
+if active_project is None:
+    st.warning("No active project loaded.")
+else:
+    st.success("Active project loaded.")
 
+saved = get_project_data_section("internal_gains_form", {}) or {}
 
-def load_gains_controls_defaults_into_state(force_reload: bool = False) -> None:
-    already_loaded = st.session_state.get("gains_controls_defaults_loaded", False)
+st.header("1. Internal gains input mode")
 
-    if already_loaded and not force_reload:
-        return
-
-    project_sections = get_project_data_section("gains_controls", None)
-
-    if project_sections and not force_reload:
-        st.session_state["gains_controls_sections"] = project_sections
-    else:
-        st.session_state["gains_controls_sections"] = extract_gains_controls_sections_from_hem(
-            BASE_JSON_PATH
-        )
-
-    st.session_state["gains_controls_defaults_loaded"] = True
-
-
-def clear_gains_controls_state() -> None:
-    for key in [
-        "gains_controls_sections",
-        "gains_controls_defaults_loaded",
-    ]:
-        if key in st.session_state:
-            del st.session_state[key]
-
-
-load_gains_controls_defaults_into_state(force_reload=False)
-
-st.header("1. Input source")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button("Restore gains and controls from uploaded HEM JSON"):
-        load_gains_controls_defaults_into_state(force_reload=True)
-        update_project_data(
-            "gains_controls",
-            st.session_state["gains_controls_sections"],
-        )
-        st.success("Gains and controls restored from uploaded HEM JSON.")
-        st.rerun()
-
-with col2:
-    if st.button("Clear gains and controls"):
-        clear_gains_controls_state()
-        update_project_data("gains_controls", {})
-        st.warning("Gains and controls cleared. The uploaded HEM case is still loaded.")
-        st.rerun()
-
-gains_controls_sections = st.session_state.get("gains_controls_sections", {})
-
-st.header("2. Section summary")
-
-summary = summarise_gains_controls_sections(gains_controls_sections)
-
-c1, c2, c3, c4 = st.columns(4)
-
-with c1:
-    st.metric("Internal gains", summary["internal_gain_count"])
-
-with c2:
-    st.metric("Appliance gains", summary["appliance_gain_count"])
-
-with c3:
-    st.metric("Events", summary["event_count"])
-
-with c4:
-    st.metric("Controls", summary["control_count"])
-
-st.header("3. Edit gains and controls JSON")
+enabled = st.checkbox(
+    "Use form-based internal gains in generated HEM input",
+    value=bool(saved.get("enabled", True)),
+)
 
 st.caption(
-    "This editor preserves the official HEM InternalGains, ApplianceGains, Events "
-    "and Control structure. Only edit this JSON if you know the HEM schema."
+    "When enabled, the generated HEM JSON will use the schedules from this page instead of uploaded/demo gains."
 )
 
-gains_json_text = st.text_area(
-    "Gains, controls and events JSON",
-    value=json.dumps(gains_controls_sections, indent=2),
-    height=560,
+st.header("2. Occupancy and internal sensible gains")
+
+with st.form("internal_gains_form_ui"):
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        occupants = st.number_input(
+            "Typical occupants",
+            min_value=0.0,
+            value=float(saved.get("occupants", 2.0)),
+            step=0.5,
+        )
+
+        metabolic_w_per_person = st.number_input(
+            "Metabolic gain per person (W/person)",
+            min_value=0.0,
+            value=float(saved.get("metabolic_w_per_person", 80.0)),
+            step=5.0,
+        )
+
+        other_internal_peak_w = st.number_input(
+            "Other internal sensible gain peak (W)",
+            min_value=0.0,
+            value=float(saved.get("other_internal_peak_w", 150.0)),
+            step=10.0,
+        )
+
+    with c2:
+        lighting_peak_w = st.number_input(
+            "Lighting peak load (W)",
+            min_value=0.0,
+            value=float(saved.get("lighting_peak_w", 120.0)),
+            step=10.0,
+        )
+
+        lighting_gains_fraction = st.number_input(
+            "Lighting gains fraction to zone",
+            min_value=0.0,
+            max_value=1.0,
+            value=float(saved.get("lighting_gains_fraction", 0.5)),
+            step=0.05,
+        )
+
+    with c3:
+        cooking_peak_w = st.number_input(
+            "Cooking peak load (W)",
+            min_value=0.0,
+            value=float(saved.get("cooking_peak_w", 900.0)),
+            step=50.0,
+        )
+
+        cooking_gains_fraction = st.number_input(
+            "Cooking gains fraction to zone",
+            min_value=0.0,
+            max_value=1.0,
+            value=float(saved.get("cooking_gains_fraction", 1.0)),
+            step=0.05,
+        )
+
+        equipment_peak_w = st.number_input(
+            "Equipment / plug-load peak (W)",
+            min_value=0.0,
+            value=float(saved.get("equipment_peak_w", 250.0)),
+            step=25.0,
+        )
+
+        equipment_gains_fraction = st.number_input(
+            "Equipment gains fraction to zone",
+            min_value=0.0,
+            max_value=1.0,
+            value=float(saved.get("equipment_gains_fraction", 0.7)),
+            step=0.05,
+        )
+
+    save = st.form_submit_button("Save internal gains profile")
+
+if save:
+    data = {
+        "enabled": enabled,
+        "occupants": occupants,
+        "metabolic_w_per_person": metabolic_w_per_person,
+        "other_internal_peak_w": other_internal_peak_w,
+        "lighting_peak_w": lighting_peak_w,
+        "lighting_gains_fraction": lighting_gains_fraction,
+        "cooking_peak_w": cooking_peak_w,
+        "cooking_gains_fraction": cooking_gains_fraction,
+        "equipment_peak_w": equipment_peak_w,
+        "equipment_gains_fraction": equipment_gains_fraction,
+    }
+
+    update_project_data("internal_gains_form", data)
+    st.success("Internal gains profile saved.")
+
+current = st.session_state.get(
+    "internal_gains_form",
+    get_project_data_section("internal_gains_form", {}) or saved,
 )
 
-col_save, col_validate = st.columns(2)
+st.header("3. Daily schedule preview")
 
-with col_validate:
-    if st.button("Validate gains and controls JSON"):
-        try:
-            parsed = json.loads(gains_json_text)
-            if not isinstance(parsed, dict):
-                st.error("Gains and controls JSON must be a JSON object/dictionary.")
-            else:
-                st.success("Gains and controls JSON is valid JSON.")
-        except json.JSONDecodeError as exc:
-            st.error("Gains and controls JSON is not valid.")
-            st.code(str(exc))
+def profile(peak, profile_type):
+    peak = float(peak)
 
-with col_save:
-    if st.button("Save gains and controls to project"):
-        try:
-            parsed = json.loads(gains_json_text)
-            if not isinstance(parsed, dict):
-                st.error("Gains and controls JSON must be a JSON object/dictionary.")
-            else:
-                st.session_state["gains_controls_sections"] = parsed
-                update_project_data("gains_controls", parsed)
-                st.success("Gains and controls saved to the app project.")
-        except json.JSONDecodeError as exc:
-            st.error("Gains and controls JSON is not valid.")
-            st.code(str(exc))
+    if profile_type == "occupancy":
+        factors = [0.90,0.90,0.90,0.90,0.90,0.80,0.65,0.50,0.30,0.20,0.20,0.25,0.25,0.25,0.25,0.35,0.55,0.75,0.90,1.00,1.00,1.00,0.95,0.90]
+    elif profile_type == "lighting":
+        factors = [0.15,0.10,0.08,0.08,0.10,0.20,0.35,0.30,0.20,0.15,0.10,0.10,0.10,0.10,0.12,0.18,0.35,0.65,0.90,1.00,0.90,0.65,0.40,0.25]
+    elif profile_type == "cooking":
+        factors = [0.02,0.01,0.01,0.01,0.02,0.05,0.20,0.35,0.08,0.04,0.04,0.15,0.35,0.20,0.05,0.05,0.15,0.65,1.00,0.65,0.20,0.08,0.04,0.02]
+    else:
+        factors = [0.35,0.30,0.25,0.25,0.25,0.30,0.45,0.60,0.50,0.45,0.45,0.50,0.55,0.55,0.55,0.60,0.70,0.85,1.00,0.95,0.80,0.65,0.50,0.40]
 
-st.header("4. Project save status")
+    return [peak * f for f in factors]
 
-if st.session_state.get("gains_controls_sections"):
-    st.success(
-        "Gains, controls and events are available for the central Run HEM / Results page."
-    )
-else:
-    st.info("No gains and controls are currently saved.")
+hours = list(range(24))
 
-with st.expander("Developer/debug: view saved gains and controls", expanded=False):
-    st.json(st.session_state.get("gains_controls_sections", {}))
+preview = pd.DataFrame(
+    {
+        "Hour": hours,
+        "Metabolic gains W": profile(
+            float(current.get("occupants", 2.0)) * float(current.get("metabolic_w_per_person", 80.0)),
+            "occupancy",
+        ),
+        "Other gains W": profile(float(current.get("other_internal_peak_w", 150.0)), "equipment"),
+        "Lighting W": profile(float(current.get("lighting_peak_w", 120.0)), "lighting"),
+        "Cooking W": profile(float(current.get("cooking_peak_w", 900.0)), "cooking"),
+        "Equipment W": profile(float(current.get("equipment_peak_w", 250.0)), "equipment"),
+    }
+).set_index("Hour")
+
+st.line_chart(preview)
+
+st.header("4. Generated HEM structure")
+
+st.write("This page generates:")
+
+st.code(
+    """
+InternalGains:
+  metabolic gains
+  other
+
+ApplianceGains:
+  lighting
+  cooking
+  equipment
+""".strip()
+)
+
+with st.expander("Saved internal gains form", expanded=False):
+    st.json(current)
+
+
+
